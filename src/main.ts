@@ -3,7 +3,7 @@ import { ErrorHandler } from './helpers/ErrorHandler.helper';
 import api from './api/v1';
 
 const app: Application = express();
-const PORT = process.env.PORT || 2000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
