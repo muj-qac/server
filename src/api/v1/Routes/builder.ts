@@ -1,9 +1,8 @@
-import express from 'express';
+import express, { Router } from 'express';
 import { asyncWrap } from '../../../middlewares/async.middleware';
 import { throwError } from '../../../helpers/ErrorHandler.helper';
 
-const router = express.Router();
-
+const router: Router = express.Router();
 
 router.post(
   '/new',
@@ -17,8 +16,8 @@ router.post(
   }),
 );
 
-router.get('/', (_,res:any) => {
-  res.send("Hello World");
+router.get('/', (_, res: any) => {
+  res.send('Hello World');
 });
 
 export default router;
