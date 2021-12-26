@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { asyncWrap } from '../../../middlewares/async.middleware';
-import { throwError } from '../../../helpers/ErrorHandler.helper';
+import { asyncWrap } from '../middlewares/async.middleware';
+import { throwError } from '../helpers/ErrorHandler.helper';
 
 const router: Router = express.Router();
 
