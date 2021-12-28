@@ -14,13 +14,6 @@ export interface NumberRule {
   greaterThan?: { number: number; equal: boolean };
 }
 
-export interface NumberRule {
-  equals?: number;
-  between?: { from: number; to: number };
-  lessThan?: { number: number; equal: boolean };
-  greaterThan?: { number: number; equal: boolean };
-}
-
 export interface DateRule {
   isValid?: boolean;
   between?: { from: string; to: string };
@@ -29,7 +22,7 @@ export interface DateRule {
 }
 
 export interface DropdownRule {
-  items: string[];
+  list: string[];
 }
 
 export interface CheckboxRule {
