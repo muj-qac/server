@@ -1,6 +1,6 @@
 import express, { Application, Request, Response } from 'express';
 import { ErrorHandler } from './helpers/ErrorHandler.helper';
-import api from './api/v1';
+import api from './routes';
 
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
