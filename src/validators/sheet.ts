@@ -6,12 +6,12 @@ import {
   DateRule,
   DropdownRule,
   CheckboxRule,
+  CellValidation,
 } from '../types/sheet/validations';
 
 export const isValidTextInput: JSONSchemaType<TextRule> = {
   type: 'object',
   properties: {
-    invalidHelpText: { type: 'string', nullable: true },
     equals: { type: 'string', nullable: true },
     notContains: { type: 'string', nullable: true },
     contains: { type: 'string', nullable: true },
@@ -95,6 +95,7 @@ export const isValidDropdownInput: JSONSchemaType<DropdownRule> = {
   },
   required: ['list'],
 };
+
 export const isValidCheckboxInput: JSONSchemaType<CheckboxRule> = {
   type: 'object',
   properties: {
@@ -106,4 +107,29 @@ export const isValidCheckboxInput: JSONSchemaType<CheckboxRule> = {
       nullable: true,
     },
   },
+};
+
+export const isValidCellTypeInput: JSONSchemaType<CellValidation> = {
+  type: 'object',
+  properties: {
+    type: {
+      type: 'string',
+      enum: ['text', 'number', 'date', 'dropdown', 'checkbox'],
+    },
+    invalidAction: { type: 'string', enum: ['warn', 'reject'] },
+    rule: {
+      type: 'object',
+      nullable: true,
+    },
+    invalidHelpText: { type: 'string', nullable: true },
+  },
+  required: ['type', 'invalidAction'],
+};
+
+export const sheetSchemas = {
+  text: isValidTextInput,
+  number: isValidNumberInput,
+  date: isValidDateInput,
+  dropdown: isValidDropdownInput,
+  checkbox: isValidCheckboxInput,
 };

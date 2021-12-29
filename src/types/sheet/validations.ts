@@ -1,5 +1,4 @@
 export interface TextRule {
-  invalidHelpText?: string;
   equals?: string;
   notContains?: string;
   contains?: string;
