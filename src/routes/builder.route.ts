@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getNewSheetData } from '../controllers/builder';
+import { getNewSheetData } from '../controllers/builder.controller';
 
 const router: Router = express.Router();
 

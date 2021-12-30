@@ -1,12 +1,10 @@
 import { RequestHandler } from 'express';
-import Ajv from 'ajv';
+import { ajv } from '../config/ajv.config';
 import { asyncWrap } from '../middlewares/async.middleware';
 import { throwError } from '../helpers/ErrorHandler.helper';
 
 import { CellValidation } from '../types/sheet/validations';
 import { isValidCellTypeInput, sheetSchemas } from '../validators/sheet';
-
-const ajv = new Ajv();
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {

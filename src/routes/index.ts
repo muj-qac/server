@@ -1,6 +1,6 @@
 import express from 'express';
 import authRoutes from './auth';
-import builderRoutes from './builder';
+import builderRoutes from './builder.route';
 
 const api = express();
 api.use(express.json());
