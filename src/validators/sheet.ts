@@ -112,6 +112,7 @@ export const isValidCheckboxInput: JSONSchemaType<CheckboxRule> = {
 export const isValidCellTypeInput: JSONSchemaType<CellValidation> = {
   type: 'object',
   properties: {
+    name: { type: 'string' },
     type: {
       type: 'string',
       enum: ['text', 'number', 'date', 'dropdown', 'checkbox'],
@@ -123,7 +124,7 @@ export const isValidCellTypeInput: JSONSchemaType<CellValidation> = {
     },
     invalidHelpText: { type: 'string', nullable: true },
   },
-  required: ['type', 'invalidAction'],
+  required: ['name', 'type', 'invalidAction'],
 };
 
 export const sheetSchemas = {
