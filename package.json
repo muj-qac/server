@@ -59,8 +59,9 @@
     "passport-local": "^1.0.0",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^7.0.0-alpha.2",
-    "tslib": "~2.3.1"
+    "ts-node": "^10.4.0",
+    "tslib": "~2.3.1",
+    "typeorm": "^0.2.41"
   },
   "volta": {
     "node": "16.13.0"
