@@ -61,8 +61,8 @@ export const isValidDateInput: JSONSchemaType<DateRule> = {
     between: {
       type: 'object',
       properties: {
-        from: { type: 'string', format: 'date', nullable: true },
-        to: { type: 'string', format: 'date', nullable: true },
+        from: { type: 'string', nullable: true },
+        to: { type: 'string', nullable: true },
       },
       nullable: true,
       required: ['from', 'to'],
@@ -70,7 +70,7 @@ export const isValidDateInput: JSONSchemaType<DateRule> = {
     lessThan: {
       type: 'object',
       properties: {
-        date: { type: 'string', format: 'date', nullable: true },
+        date: { type: 'string', nullable: true },
         equal: { type: 'boolean', nullable: true },
       },
       nullable: true,
@@ -79,7 +79,7 @@ export const isValidDateInput: JSONSchemaType<DateRule> = {
     greaterThan: {
       type: 'object',
       properties: {
-        date: { type: 'string', format: 'date', nullable: true },
+        date: { type: 'string', nullable: true },
         equal: { type: 'boolean', nullable: true },
       },
       nullable: true,
