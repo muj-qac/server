@@ -24,12 +24,11 @@ const validateUser = async (email: string, password: string, done) => {
         email: email,
       },
     });
-    if (!user) return done(null, false);
+    if (!user) { done(null, false); return; }
     bcrypt.compare(password, user.password, (err, result: boolean) => {
       if (err) throw err;
-      // console.log(result);
-      if (result) return done(null, user);
-      else return done(null, false);
+      if (!result) done(null, false);
+      done(null, user);
     });
   } catch (error) {
     console.error(error);
@@ -45,13 +44,11 @@ passport.use(strategy);
 // passport serialize and deserialize
 // ============================================================
 passport.serializeUser((user: DatabaseUserInterface, done) => {
-  console.log("this is serialiser")
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    console.log("this is deserialiser")
     const user = await User.findOne({
       where: {
         id: id,

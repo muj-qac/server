@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import {
   getNewSheetData,
   downloadSheet,
-} from '../controllers/sheet.controller';
+} from '../../controllers/sheet.controller';
 
 const router: Router = express.Router();
 
