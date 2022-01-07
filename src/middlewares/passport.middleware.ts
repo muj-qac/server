@@ -11,17 +11,7 @@ const LocalStrategy = passportLocal.Strategy;
 const getUserInfo = (user) => {
   return {
           id: user.id,
-          firstName:user.first_name,
-          lastName:user.last_name || undefined,
           email:user.email,
-          details:{
-            program:user.details?.program || undefined,
-            faculty:user.details?.faculty || undefined,
-            school:user.details?.school || undefined,
-            department:user.details?.department || undefined
-          } || undefined,
-          phoneNumber:user.phone_number || undefined,
-          role:user.role,
           isAdmin:user.is_admin
         };
 }
