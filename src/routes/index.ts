@@ -1,12 +1,12 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 
-import authRoutes from './auth';
+import authRoutes from './auth.route';
 
 import builderRoutes from './builder.route';
-import adminRoutes from './admin'; 
-import passport from'../middlewares/passportConfig'
-import sessionMiddleware from '../middlewares/session';
+import adminRoutes from './admin.route'; 
+import passport from'../middlewares/passport.middleware'
+import sessionMiddleware from '../middlewares/session.middleware';
 
 
 const api = express();
@@ -21,5 +21,5 @@ api.use(passport.session());
 api.use('/auth',authRoutes);
 api.use('/admin', adminRoutes);
 api.use('/builder', builderRoutes);
-
+    
 export default api;
