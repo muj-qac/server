@@ -1,17 +1,31 @@
-import { Column, Entity } from 'typeorm';
-import { Table } from './util/Table';
+import { IsAlpha, IsArray, IsEmail, IsPhoneNumber } from 'class-validator';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('users')
-export class User extends Table {
-  @Column()
-  first_name: string;
+export class User extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
+  @IsAlpha()
+  first_name: string;
+
+  @Column({
+    nullable: true,
+  })
   last_name: string;
 
   @Column({
     unique: true,
   })
+  @IsEmail()
   email: string;
 
   @Column()
@@ -28,14 +42,26 @@ export class User extends Table {
     department: string;
   };
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
+  @IsPhoneNumber('IN')
   phone_number: string;
 
-  @Column()
-  role: string;
+  @Column({
+    type: 'simple-array',
+  })
+  @IsArray()
+  role: string[];
 
   @Column({
     default: false,
   })
   is_admin: boolean;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }
