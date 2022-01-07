@@ -61,8 +61,8 @@ export const isValidDateInput: JSONSchemaType<DateRule> = {
     between: {
       type: 'object',
       properties: {
-        from: { type: 'string', format: 'date', nullable: true },
-        to: { type: 'string', format: 'date', nullable: true },
+        from: { type: 'string', nullable: true },
+        to: { type: 'string', nullable: true },
       },
       nullable: true,
       required: ['from', 'to'],
@@ -70,7 +70,7 @@ export const isValidDateInput: JSONSchemaType<DateRule> = {
     lessThan: {
       type: 'object',
       properties: {
-        date: { type: 'string', format: 'date', nullable: true },
+        date: { type: 'string', nullable: true },
         equal: { type: 'boolean', nullable: true },
       },
       nullable: true,
@@ -79,7 +79,7 @@ export const isValidDateInput: JSONSchemaType<DateRule> = {
     greaterThan: {
       type: 'object',
       properties: {
-        date: { type: 'string', format: 'date', nullable: true },
+        date: { type: 'string', nullable: true },
         equal: { type: 'boolean', nullable: true },
       },
       nullable: true,
@@ -112,6 +112,7 @@ export const isValidCheckboxInput: JSONSchemaType<CheckboxRule> = {
 export const isValidCellTypeInput: JSONSchemaType<CellValidation> = {
   type: 'object',
   properties: {
+    name: { type: 'string' },
     type: {
       type: 'string',
       enum: ['text', 'number', 'date', 'dropdown', 'checkbox'],
@@ -123,7 +124,7 @@ export const isValidCellTypeInput: JSONSchemaType<CellValidation> = {
     },
     invalidHelpText: { type: 'string', nullable: true },
   },
-  required: ['type', 'invalidAction'],
+  required: ['name', 'type', 'invalidAction'],
 };
 
 export const sheetSchemas = {

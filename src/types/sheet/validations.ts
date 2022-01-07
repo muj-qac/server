@@ -30,6 +30,7 @@ export interface CheckboxRule {
 }
 
 export interface CellValidation {
+  name: string;
   type: 'text' | 'number' | 'date' | 'dropdown' | 'checkbox';
   invalidAction: 'warn' | 'reject';
   rule?: TextRule | NumberRule | DateRule | DropdownRule | CheckboxRule;

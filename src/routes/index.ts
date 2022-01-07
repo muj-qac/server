@@ -2,10 +2,12 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 
 import authRoutes from './auth';
-import builderRoutes from './builder';
+
+import builderRoutes from './builder.route';
 import adminRoutes from './admin'; 
 import passport from'../middlewares/passportConfig'
 import sessionMiddleware from '../middlewares/session';
+
 
 const api = express();
 api.use(express.json());
