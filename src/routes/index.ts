@@ -4,8 +4,8 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './auth.route';
 
 import builderRoutes from './builder.route';
-import adminRoutes from './admin.route'; 
-import passport from'../middlewares/passport.middleware'
+import adminRoutes from './admin.route';
+import passport from '../middlewares/passport.middleware'
 import sessionMiddleware from '../middlewares/session.middleware';
 
 
@@ -18,8 +18,8 @@ api.use(passport.initialize());
 api.use(passport.session());
 
 
-api.use('/auth',authRoutes);
+api.use('/auth', authRoutes);
 api.use('/admin', adminRoutes);
 api.use('/builder', builderRoutes);
-    
+
 export default api;

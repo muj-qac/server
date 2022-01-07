@@ -20,16 +20,6 @@ export type DatabaseUserInterface = {
 
 export type UserInterface = {
   readonly id: string;
-  firstName: string;
-  lastName?: string;
   email: string;
-  details?: {
-    program?: string;
-    faculty?: string;
-    school?: string;
-    department?: string;
-  };
-  phoneNumber?:string;
-  role:string[];
   isAdmin:boolean;
 };

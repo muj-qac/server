@@ -10,23 +10,13 @@ const LocalStrategy = passportLocal.Strategy;
 
 const getUserInfo = (user) => {
   return {
-          id: user.id,
-          firstName:user.first_name,
-          lastName:user.last_name || undefined,
-          email:user.email,
-          details:{
-            program:user.details?.program || undefined,
-            faculty:user.details?.faculty || undefined,
-            school:user.details?.school || undefined,
-            department:user.details?.department || undefined
-          } || undefined,
-          phoneNumber:user.phone_number || undefined,
-          role:user.role,
-          isAdmin:user.is_admin
-        };
+    id: user.id,
+    email: user.email,
+    isAdmin: user.is_admin
+  };
 }
 
-const validateUser = async (email:string,password:string, done) => {
+const validateUser = async (email: string, password: string, done) => {
   // console.log('bleh');
   try {
     const user = await User.findOne({
@@ -47,7 +37,7 @@ const validateUser = async (email:string,password:string, done) => {
   }
 };
 
-const strategy = new LocalStrategy({usernameField:"email",passwordField:"password"},validateUser)
+const strategy = new LocalStrategy({ usernameField: "email", passwordField: "password" }, validateUser)
 
 
 passport.use(strategy);
@@ -55,18 +45,20 @@ passport.use(strategy);
 // passport serialize and deserialize
 // ============================================================
 passport.serializeUser((user: DatabaseUserInterface, done) => {
+  console.log("this is serialiser")
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
+    console.log("this is deserialiser")
     const user = await User.findOne({
       where: {
-        id:id,
+        id: id,
       },
     });
-    const userInfo:UserInterface = getUserInfo(user);
-    done(null,userInfo);
+    const userInfo: UserInterface = getUserInfo(user);
+    done(null, userInfo);
   } catch (error) {
     done(error)
   }

@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 // ============================================================
 app.use(cors({ origin: '*', credentials: true }));
 
-app.use('/api', api);
+app.use('/api/v1', api);
 
 app.use(ErrorHandler);
 
@@ -23,7 +23,7 @@ app.get('/', (_: Request, res: Response) => {
   res.send('Hello World!');
 });
 
-db(() =>{
+db(() => {
   app.listen(PORT, () => {
     console.log(`App listening at: ${PORT}`);
   });
