@@ -8,11 +8,13 @@ import ApiResponse from '../types/api';
 import { throwError } from '../helpers/ErrorHandler.helper';
 import { asyncWrap } from '../middlewares/async.middleware';
 import { isValidCellTypeInput, sheetSchemas } from '../validators/sheet';
-import { buildSheet } from '../handlers/googleSheetBuilder.handler';
+import { buildSheet } from '../handlers/sheetBuilder.handler';
+import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
+import { Readable } from 'stream';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
-    let columns: CellValidation[] = req.body.columns;
+    const columns: CellValidation[] = req.body.columns;
 
     // validates the input json
     columns.forEach((column) => {
@@ -37,5 +39,29 @@ export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   } catch (error) {
     console.log(error);
     throwError(500, `Some error occurred.`);
+  }
+});
+
+export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
+  try {
+    const sheetId = req.params.id;
+    console.log(sheetId);
+    const data = await downloadGoogleSheet(sheetId);
+    res.attachment('sheet.xlsx');
+    if (!data) {
+      res.send('oops');
+      return;
+    }
+    if (!data.data) {
+      res.send('oops');
+      return;
+    }
+    let buffer = Buffer.from(`${data.data}`, 'utf8');
+    let stream = new Readable();
+    stream.push(buffer);
+    stream.push(null);
+    stream.pipe(res);
+  } catch (error) {
+    console.log(error);
   }
 });

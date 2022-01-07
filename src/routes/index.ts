@@ -21,8 +21,8 @@ api.use(passport.session());
 api.use('/auth', authRoutes);
 api.use('/admin', isAdmin, adminRoutes);
 api.use('/member', isAuthenticated, memberRoutes);
-api.use('/',()=>{
-    throwError(404,"Route does not exist");
+api.use('/', () => {
+    throwError(404, "Route does not exist");
 })
 
 export default api;
