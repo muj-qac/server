@@ -2,7 +2,7 @@ import { hash } from 'bcryptjs';
 import { Request, RequestHandler, Response } from 'express';
 import { throwError } from '../helpers/ErrorHandler.helper';
 import { asyncWrap } from '../middlewares/async.middleware';
-import { User } from '../models/User';
+import { User } from '../models/User.model';
 
 export const postAddUser: RequestHandler<any> = asyncWrap(
   async (req: Request, res: Response) => {

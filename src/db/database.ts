@@ -1,5 +1,5 @@
 import { createConnection } from 'typeorm';
-import { User } from '../models/User';
+import { User } from '../models/User.model';
 
 const db = async (cb) => {
   try {

@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import passportLocal from 'passport-local';
 import { throwError } from '../helpers/ErrorHandler.helper';
-import { User } from '../models/User';
+import { User } from '../models/User.model';
 import { DatabaseUserInterface, UserInterface } from '../types/api/user';
 
 
