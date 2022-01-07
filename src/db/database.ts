@@ -1,7 +1,8 @@
 import { createConnection } from 'typeorm';
-import { User } from '../models/User';
+import { Role } from '../models/Role.model';
+import { User } from '../models/User.model';
 
-const db = async () => {
+const db = async (cb) => {
   try {
     await createConnection({
       type: 'postgres',
@@ -13,10 +14,11 @@ const db = async () => {
           rejectUnauthorized: false,
         },
       },
-      entities: [User],
+      entities: [User, Role],
       synchronize: true,
     });
     console.log('Connected to Postgres');
+    cb();
   } catch (error) {
     console.error(error);
     throw new Error('Unable to connect to db');
