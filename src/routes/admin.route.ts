@@ -1,16 +1,19 @@
 import express, { Router } from 'express';
-import * as admin from '../controllers/admin.controller';
-import roles from './admin/role.route';
+import roleRoutes from './admin/role.route';
+import builderRoutes from './admin/builder.route'
+import userRoutes from './admin/user.route'
 
 const router: Router = express.Router();
 
 router.get('/', (_req, res, _next) => {
-    console.log(_req.isAuthenticated(),_req.session);
-    res.json({admin:_req.user});
+    res.json({ admin: _req.user });
 })
 
-router.post('/add-user', admin.postAddUser);
+router.use('/user', userRoutes);
 
-router.use('/roles', roles);
+router.use('/role', roleRoutes);
+
+router.use('/builder', builderRoutes);
+
 
 export default router;

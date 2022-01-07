@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+
 @Entity('users')
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -65,3 +66,4 @@ export class User extends BaseEntity {
   @UpdateDateColumn()
   updated_at: Date;
 }
+
