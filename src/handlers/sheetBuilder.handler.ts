@@ -1,6 +1,6 @@
 import { sheetsAPI, driveAPI } from '../config/google.config';
 import { SERVICE_ACCOUNT_EMAIL, ADMIN_ACCOUNT_EMAIL } from '../constants/sheet';
-import { validateSheet } from './googleSheetValidator.handler';
+import { validateSheet } from './sheetValidator.handler';
 import { CellValidation } from '../types/sheet/validations';
 import { throwError } from '../helpers/ErrorHandler.helper';
 
