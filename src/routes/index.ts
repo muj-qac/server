@@ -6,7 +6,7 @@ import passport from '../middlewares/passport.middleware'
 import { isAdmin, isAuthenticated } from '../middlewares/auth.middeleware';
 import authRoutes from './auth.route';
 import adminRoutes from './admin.route';
-import memberRoutes from './member.route';
+import userRoutes from './user.route';
 import { throwError } from '../helpers/ErrorHandler.helper';
 
 
@@ -20,9 +20,9 @@ api.use(passport.session());
 
 api.use('/auth', authRoutes);
 api.use('/admin', isAdmin, adminRoutes);
-api.use('/member', isAuthenticated, memberRoutes);
+api.use('/user', isAuthenticated, userRoutes);
 api.use('/', () => {
     throwError(404, "Route does not exist");
-})
+});
 
 export default api;

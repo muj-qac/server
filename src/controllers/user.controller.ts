@@ -52,3 +52,11 @@ export const postAddUser: RequestHandler<any> = asyncWrap(
     }
   },
 );
+
+export const getAllUser: RequestHandler<any> = asyncWrap(async (_req, res) => {
+  try {
+    res.send("Bleh");
+  } catch (error) {
+    throwError(401, "Some error occured");
+  }
+});
