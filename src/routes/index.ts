@@ -2,13 +2,12 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 
 import sessionMiddleware from '../middlewares/session.middleware';
-import passport from '../middlewares/passport.middleware'
+import passport from '../middlewares/passport.middleware';
 import { isAdmin, isAuthenticated } from '../middlewares/auth.middeleware';
 import authRoutes from './auth.route';
 import adminRoutes from './admin.route';
 import userRoutes from './user.route';
 import { throwError } from '../helpers/ErrorHandler.helper';
-
 
 const api = express();
 api.use(express.json());
