@@ -17,7 +17,6 @@ const getUserInfo = (user) => {
 }
 
 const validateUser = async (email: string, password: string, done) => {
-  // console.log('bleh');
   try {
     const user = await User.findOne({
       where: {
