@@ -21,7 +21,7 @@ api.use('/auth', authRoutes);
 api.use('/admin', isAdmin, adminRoutes);
 api.use('/user', isAuthenticated, userRoutes);
 api.use('/', () => {
-    throwError(404, "Route does not exist");
+  throwError(404, 'Route does not exist');
 });
 
 export default api;
