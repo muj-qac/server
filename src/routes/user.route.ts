@@ -1,6 +1,7 @@
-import { Router } from "express";
-import * as user from '../controllers/user.controller'
-
+import { Router } from 'express';
+import * as user from '../controllers/user.controller';
+import { postKPI } from '../controllers/upload.controller';
+import uploadMiddleware from '../middlewares/upload.middleware';
 
 const router = Router();
 
@@ -11,5 +12,7 @@ router.get('/', (req, res, _next) => {
 });
 
 router.put('/change-password');
+
+router.post('/upload/:kpi', uploadMiddleware.single('file'), postKPI);
 
 export default router;

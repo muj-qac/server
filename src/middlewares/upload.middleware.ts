@@ -11,7 +11,7 @@ const s3 = new aws.S3({
   signatureVersion: 'v4',
 });
 
-const upload = multer({
+const uploadMiddleware = multer({
   storage: multerS3({
     s3: s3,
     bucket: `${process.env.AWS_BUCKET_NAME}`,
@@ -25,4 +25,4 @@ const upload = multer({
   }),
 });
 
-export default upload;
+export default uploadMiddleware;
