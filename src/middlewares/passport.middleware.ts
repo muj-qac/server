@@ -5,16 +5,15 @@ import { throwError } from '../helpers/ErrorHandler.helper';
 import { User } from '../models/User.model';
 import { DatabaseUserInterface, UserInterface } from '../types/api/user';
 
-
 const LocalStrategy = passportLocal.Strategy;
 
 const getUserInfo = (user) => {
   return {
     id: user.id,
     email: user.email,
-    isAdmin: user.is_admin
+    isAdmin: user.is_admin,
   };
-}
+};
 
 const validateUser = async (email: string, password: string, done) => {
   try {
@@ -23,7 +22,10 @@ const validateUser = async (email: string, password: string, done) => {
         email: email,
       },
     });
-    if (!user) { done(null, false); return; }
+    if (!user) {
+      done(null, false);
+      return;
+    }
     bcrypt.compare(password, user.password, (err, result: boolean) => {
       if (err) throw err;
       if (!result) done(null, false);
@@ -35,8 +37,10 @@ const validateUser = async (email: string, password: string, done) => {
   }
 };
 
-const strategy = new LocalStrategy({ usernameField: "email", passwordField: "password" }, validateUser)
-
+const strategy = new LocalStrategy(
+  { usernameField: 'email', passwordField: 'password' },
+  validateUser,
+);
 
 passport.use(strategy);
 // ============================================================
@@ -56,8 +60,8 @@ passport.deserializeUser(async (id: string, done) => {
     const userInfo: UserInterface = getUserInfo(user);
     done(null, userInfo);
   } catch (error) {
-    done(error)
+    done(error);
   }
 });
 
-export default passport
+export default passport;
