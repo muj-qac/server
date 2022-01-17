@@ -1,6 +1,10 @@
 import { createConnection } from 'typeorm';
 import { Role } from '../models/Role.model';
 import { User } from '../models/User.model';
+import { KpiData } from '../models/KpiData.model';
+import { KpiAllocation } from '../models/KpiAllocation.model';
+import { UploadedSheet } from '../models/UploadedSheet.model';
+
 
 const db = async (cb) => {
   try {
@@ -14,7 +18,7 @@ const db = async (cb) => {
           rejectUnauthorized: false,
         },
       },
-      entities: [User, Role],
+      entities: [User, Role, KpiData, KpiAllocation, UploadedSheet],
       synchronize: true,
     });
     console.log('Connected to Postgres');
