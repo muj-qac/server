@@ -1,18 +1,25 @@
 import { IsObject } from "class-validator";
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { KpiAllocation } from "./KpiAllocation.model";
 
 
 
-@Entity('kpi-allocation')
-export class KpiAllocation extends BaseEntity {
-    @PrimaryGeneratedColumn()
+@Entity('kpi-data')
+export class KpiData extends BaseEntity {
+    @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Column()
+    name: string;
+
     @Column({
-        type:'simple-json'
+        type: 'simple-json'
     })
     @IsObject()
-    schema:string;
+    schema: string;
+
+    @OneToOne(() => KpiAllocation, allocation => allocation.kpiData)
+    allocation: KpiAllocation
 
     @CreateDateColumn()
     created_at: Date;

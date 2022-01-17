@@ -12,6 +12,8 @@ const getUserInfo = (user) => {
     id: user.id,
     email: user.email,
     isAdmin: user.is_admin,
+    firstName: user.first_name,
+    lastName: user.last_name
   };
 };
 
