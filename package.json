@@ -61,13 +61,15 @@
     "express-session": "^1.17.2",
     "multer": "^1.4.4",
     "multer-s3": "^2.10.0",
+    "node-xlsx": "^0.21.0",
     "passport": "^0.5.2",
     "passport-local": "^1.0.0",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
     "ts-node": "^10.4.0",
     "tslib": "~2.3.1",
-    "typeorm": "^0.2.41"
+    "typeorm": "^0.2.41",
+    "xlsx": "^0.17.5"
   },
   "volta": {
     "node": "16.13.0"
