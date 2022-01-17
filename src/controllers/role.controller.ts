@@ -6,7 +6,7 @@ import { Role } from "../models/Role.model";
 
 export const getAllrole: RequestHandler<any> = asyncWrap(async (_req, res) => {
     try {
-        const roles = await Role.find({ select: ['role_name'] });
+        const roles = await Role.find({ select: ['role_name'], order: { role_name: "ASC" } });
         res.status(200).json(roles);
     } catch (error) {
         throwError(401, "Some error occured");
