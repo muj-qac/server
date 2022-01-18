@@ -4,14 +4,17 @@ import { validateSheet } from './sheetValidator.handler';
 import { CellValidation } from '../types/sheet/validations';
 import { throwError } from '../helpers/ErrorHandler.helper';
 
-export const buildSheet = async (columns: CellValidation[]) => {
+export const buildSheet = async (
+  title: string = 'Untitled KPI',
+  columns: CellValidation[],
+) => {
   let response = { success: true, data: {}, error: null };
   try {
     // create a new sheet
-    let properties = { title: 'Test KPI' };
+    let properties = { title: 'KPI' };
 
     const newSheet = await sheetsAPI.spreadsheets.create({
-      requestBody: { sheets: [{ properties }] },
+      requestBody: { sheets: [{ properties }], properties: { title } },
     });
 
     if (!newSheet.data.spreadsheetId) {
@@ -92,6 +95,7 @@ export const buildSheet = async (columns: CellValidation[]) => {
       },
     });
 
+    // @ts-ignore
     await sheetsAPI.spreadsheets.batchUpdate({
       spreadsheetId: `${spreadsheetId}`,
       requestBody: {
@@ -118,24 +122,44 @@ export const buildSheet = async (columns: CellValidation[]) => {
               })),
 
               // create data validations
-              ...columns.map((validation: CellValidation, i: number) => ({
-                setDataValidation: {
-                  range: {
-                    sheetId,
-                    startRowIndex: 1,
-                    startColumnIndex: i,
-                    endColumnIndex: i + 1,
-                  },
-                  rule: validateSheet(validation, i),
-                },
-              })),
+              // ...columns
+              //   .filter((column) => column.rule)
+              //   .map((validation: CellValidation, i: number) => ({
+              //     setDataValidation: {
+              //       range: {
+              //         sheetId,
+              //         startRowIndex: 1,
+              //         startColumnIndex: i,
+              //         endColumnIndex: i + 1,
+              //       },
+              //       rule: validateSheet(validation, i),
+              //     },
+              //   })),
+
+              // create data validations
+              ...columns.map((validation: CellValidation, i: number) =>
+                validation.rule
+                  ? {
+                      setDataValidation: {
+                        range: {
+                          sheetId,
+                          startRowIndex: 1,
+                          startColumnIndex: i,
+                          endColumnIndex: i + 1,
+                        },
+                        rule: validateSheet(validation, i),
+                      },
+                    }
+                  : null,
+              ),
             ]
           : [],
       },
     });
 
-    response.data = { sheetLink };
+    response.data = { sheetLink, id: spreadsheetId };
   } catch (error) {
+    console.log(error);
     response.success = false;
     response.error = error;
   } finally {

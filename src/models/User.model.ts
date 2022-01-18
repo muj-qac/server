@@ -61,7 +61,11 @@ export class User extends BaseEntity {
   })
   is_admin: boolean;
 
+<<<<<<< HEAD
   @OneToMany(() => UploadedSheet, (uploadedSheet) => uploadedSheet.user)
+=======
+  @OneToMany(() => UploadedSheet, uploadedSheet => uploadedSheet.user)
+>>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
   uploadedSheets: UploadedSheet[];
 
   @CreateDateColumn()
