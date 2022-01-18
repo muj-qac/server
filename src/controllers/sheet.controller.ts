@@ -14,6 +14,7 @@ import { Readable } from 'stream';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
+    const title: string = req.body.title;
     const columns: CellValidation[] = req.body.columns;
 
     // validates the input json
@@ -29,7 +30,7 @@ export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
       }
     });
 
-    const result = await buildSheet(columns);
+    const result = await buildSheet(title, columns);
     if (!result?.success) throwError(500, 'Error building the sheet.');
 
     // TODO: generate the sheet download link
@@ -63,5 +64,6 @@ export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
     stream.pipe(res);
   } catch (error) {
     console.log(error);
+    return;
   }
 });
