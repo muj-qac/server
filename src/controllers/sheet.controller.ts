@@ -10,7 +10,6 @@ import { asyncWrap } from '../middlewares/async.middleware';
 import { isValidCellTypeInput, sheetSchemas } from '../validators/sheet';
 import { buildSheet } from '../handlers/sheetBuilder.handler';
 import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
-import { Readable } from 'stream';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
@@ -48,7 +47,6 @@ export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
     const sheetId = req.params.id;
     console.log(sheetId);
     const data = await downloadGoogleSheet(sheetId);
-    res.attachment('sheet.xlsx');
     if (!data) {
       res.send('oops');
       return;
@@ -57,11 +55,8 @@ export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
       res.send('oops');
       return;
     }
-    let buffer = Buffer.from(`${data.data}`, 'utf8');
-    let stream = new Readable();
-    stream.push(buffer);
-    stream.push(null);
-    stream.pipe(res);
+    res.attachment('sheet.xlsx');
+    data.data.pipe(res);
   } catch (error) {
     console.log(error);
     return;
