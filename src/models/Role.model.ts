@@ -9,7 +9,8 @@ export class Role extends BaseEntity {
     id: string;
 
     @Column({
-        nullable: false
+        nullable: false,
+        unique: true
     })
     @IsAlpha()
     role_name: string;
