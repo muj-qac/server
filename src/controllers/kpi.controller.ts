@@ -19,19 +19,21 @@ export const getAllKpi: RequestHandler<any> = asyncWrap(async (_req, res) => {
 export const postAllocateRoles: RequestHandler<any> = asyncWrap(async (req: Request, res: Response) => {
     try {
         const { roles, status, kpiId } = req.body;
-        const kpiData = await KpiData.findOne({ id: kpiId });
+        console.log(roles, status, typeof (kpiId));
+        const kpiData = await KpiData.find({ where: { id: kpiId } });
+        console.log(kpiData);
         if (!kpiData) throwError(400, "Kpi Id does not exist");
         const allocation = KpiAllocation.create({
             allocated_to_roles: roles,
             status,
-            kpiData
+            kpiData: kpiId
         });
         const kpidataData = await KpiData.update({ id: kpiId }, { allocation })
         const data = await allocation.save();
-        console.log(kpiData,kpidataData);
+        console.log(kpiData, kpidataData);
         res.status(200).json(data);
     } catch (error) {
-        throwError(401, "Entry Already exist");
+        throwError(401, error);
     }
 });
 
