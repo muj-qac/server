@@ -20,7 +20,10 @@ const uploadMiddleware = multer({
     },
     key: (_req: Request, file, cb) => {
       const kpiName = _req.params.kpi;
-      cb(null, kpiName + '/' + Date.now().toString() + '-' + file.originalname);
+      const key =
+        kpiName + '/' + Date.now().toString() + '-' + file.originalname;
+      _req.awsKey = key;
+      cb(null, key);
     },
   }),
 });

@@ -3,9 +3,10 @@ dotenv.config();
 import { RequestHandler } from 'express';
 import { throwError } from '../helpers/ErrorHandler.helper';
 import { asyncWrap } from '../middlewares/async.middleware';
-// import { statusTypes, UploadedSheet } from '../models/UploadedSheet.model';
+import { UploadedSheet } from '../models/UploadedSheet.model';
 import aws from 'aws-sdk';
 import xlsx from 'xlsx';
+import fs from 'fs';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -36,9 +37,23 @@ const getFileStream = (key, bucket) => {
 export const postKPI: RequestHandler<any> = asyncWrap(
   async (req, res, _next) => {
     try {
+      //TODO: solve error
+      const user: any = req.user;
+      const userId = user.id;
+      const kpi_id = req.body.kpiId;
+      const aws_key = req.awsKey;
+      const status: string = 'processing';
+      const uploadedSheet = UploadedSheet.create({
+        status,
+        aws_key,
+        allocated: kpi_id,
+        user: userId,
+      });
+      await uploadedSheet.save();
       res.status(200).json({
         msg: 'Successfully uploaded ' + req.file?.originalname + ' files!',
         data: req.file,
+        uploadedSheet: uploadedSheet,
       });
     } catch (error) {
       console.error(error);
@@ -137,37 +152,77 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
 
 //! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 export const updateMainKPI: RequestHandler<any> = asyncWrap(
-  async (_req, _res, _next) => {
+  async (req, res, _next) => {
     try {
-      const key = _req.body.fileKey;
+      const keyVerified = req.body.fileKeyVerified;
+      const keyUnverified = req.body.fileKeyUnverified;
+      const bucketUnverified = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
       const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
-      const params = {
+      const Verifiedparams = {
         Bucket: bucket,
-        Key: key,
+        Key: keyVerified,
       };
-      let file = s3.getObject(params).createReadStream();
-      let buffers: any[] = [];
+      const Unverifiedparams = {
+        Bucket: bucketUnverified,
+        Key: keyUnverified,
+      };
+      let file1 = s3.getObject(Verifiedparams).createReadStream();
+      let buffersVerified: any[] = [];
 
-      file.on('data', function (data) {
-        buffers.push(data);
+      let file2 = s3.getObject(Unverifiedparams).createReadStream();
+      let buffersUnverified: any[] = [];
+
+      let verifiedSheetJson: any[] = [];
+      let unverifiedSheetJson: any[] = [];
+
+      // let verifiedSheetJson: any[] = [];
+      const readFile1 = new Promise((res, _rej) => {
+        file1.on('data', function (data) {
+          buffersVerified.push(data);
+        });
+        file1.on('end', function () {
+          let bufferVerified = Buffer.concat(buffersVerified);
+          let verifiedSheetData = xlsx.read(bufferVerified);
+          let verifiedSheetCsv = xlsx.utils.sheet_to_json(
+            verifiedSheetData.Sheets[verifiedSheetData.SheetNames[0]],
+          );
+          // console.log(verifiedSheetCsv);
+          verifiedSheetJson = verifiedSheetCsv;
+          res('s');
+        });
       });
-      file.on('end', function () {
-        let buffer = Buffer.concat(buffers);
-        let verifiedSheetData = xlsx.read(buffer);
-        let verifiedSheetJson: any = xlsx.utils.sheet_to_json(
-          verifiedSheetData.Sheets[verifiedSheetData.SheetNames[0]],
-        );
-        const verifiedSheetJsonToSheet: any =
-          xlsx.utils.json_to_sheet(verifiedSheetJson);
-        console.log(verifiedSheetJsonToSheet);
-        const modifiedWorkbook = xlsx.utils.book_new();
-        let sheet = xlsx.utils.book_append_sheet(
-          verifiedSheetJsonToSheet,
-          modifiedWorkbook,
-          'kpiName',
-        );
-        _res.send(sheet);
+      // console.log(verifiedSheetCsv);
+
+      const readFile2 = new Promise((res, _rej) => {
+        file2.on('data', function (data) {
+          buffersUnverified.push(data);
+        });
+        file2.on('end', function () {
+          let bufferUnverified = Buffer.concat(buffersUnverified);
+          let unverifiedSheetData = xlsx.read(bufferUnverified);
+          let unverifiedSheetCsv = xlsx.utils.sheet_to_json(
+            unverifiedSheetData.Sheets[unverifiedSheetData.SheetNames[0]],
+          );
+          // console.log(unverifiedSheetCsv);
+          unverifiedSheetJson = unverifiedSheetCsv;
+          res('s');
+        });
       });
+
+      const readFiles = Promise.all([readFile1, readFile2]);
+      const result = await readFiles;
+
+      let combinedData: any[] = [];
+      combinedData = [...verifiedSheetJson, ...unverifiedSheetJson];
+      const combinedSheet = xlsx.utils.json_to_sheet(combinedData);
+      const wb: xlsx.WorkBook = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(wb, combinedSheet, 'test');
+      const filename = 'users.xlsx';
+      const wb_opts: any = { bookType: 'xlsx', type: 'binary' }; // workbook options
+      xlsx.writeFile(wb, filename, wb_opts); // write workbook file
+
+      const stream = fs.createReadStream(filename); // create read stream
+      stream.pipe(res);
     } catch (error) {
       console.error(error);
       throwError(400, 'Some error occurred.');
