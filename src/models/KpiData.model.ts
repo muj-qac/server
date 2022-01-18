@@ -18,6 +18,9 @@ export class KpiData extends BaseEntity {
     @IsObject()
     schema: string;
 
+    // @Column()
+    // sheet_id:string;
+
     @OneToOne(() => KpiAllocation, allocation => allocation.kpiData)
     allocation: KpiAllocation
 

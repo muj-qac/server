@@ -22,7 +22,7 @@ const createUser = async (data) => {
     throwError(400, 'Please provide all the information');
 
   const hashedPassword = await hash(password, 10);
-  const isAdmin = role[0] === 'admin' ? true : false;
+  const is_admin = (role.includes('admin') || role.includes('Admin') || role.includes('ADMIN')) ? true : false;
   return User.create({
     first_name: firstName,
     last_name: lastName,
@@ -31,36 +31,18 @@ const createUser = async (data) => {
     details,
     phone_number: phoneNumber,
     role,
-    is_admin: isAdmin,
+    is_admin,
   });
 }
 
 const updateUser = async (existingEmail, data) => {
-  const {
-    firstName,
-    lastName,
-    email,
-    details,
-    phoneNumber,
-    role,
-  } = data;
-  if (!firstName || !email || !role)
-    throwError(400, 'Please provide all the information');
-  const isAdmin = role[0] === 'admin' ? true : false;
-  return User.update({ email: existingEmail }, {
-    first_name: firstName,
-    last_name: lastName,
-    email,
-    details: {
-      program: details.program,
-      faculty: details.faculty,
-      school: details.school,
-      department: details.department,
-    },
-    phone_number: phoneNumber,
-    role,
-    is_admin: isAdmin,
-  });
+  const { details = null, ...rest } = data
+  const user = await User.findOne({ where: { email: existingEmail } });
+  if (!user) return throwError(400, "User Not Found");
+  const { password, ...restUserDetails } = user;
+  const updatedUser = { ...restUserDetails, ...rest, password, details: user?.details ? { ...user.details, ...details } : { ...details } };
+  const is_admin = (updatedUser.role.includes('admin') || updatedUser.role.includes('Admin') || updatedUser.role.includes('ADMIN')) ? true : false;
+  return User.update({ email: existingEmail }, { ...updatedUser, is_admin });
 }
 
 export const postAddUser: RequestHandler<any> = asyncWrap(
