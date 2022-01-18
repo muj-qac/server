@@ -4,14 +4,17 @@ import { validateSheet } from './sheetValidator.handler';
 import { CellValidation } from '../types/sheet/validations';
 import { throwError } from '../helpers/ErrorHandler.helper';
 
-export const buildSheet = async (columns: CellValidation[]) => {
+export const buildSheet = async (
+  title: string = 'Untitled KPI',
+  columns: CellValidation[],
+) => {
   let response = { success: true, data: {}, error: null };
   try {
     // create a new sheet
-    let properties = { title: 'Test KPI' };
+    let properties = { title: 'KPI' };
 
     const newSheet = await sheetsAPI.spreadsheets.create({
-      requestBody: { sheets: [{ properties }] },
+      requestBody: { sheets: [{ properties }], properties: { title } },
     });
 
     if (!newSheet.data.spreadsheetId) {
