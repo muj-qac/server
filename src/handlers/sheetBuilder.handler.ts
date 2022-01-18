@@ -157,7 +157,7 @@ export const buildSheet = async (
       },
     });
 
-    response.data = { sheetLink };
+    response.data = { sheetLink, id: spreadsheetId };
   } catch (error) {
     console.log(error);
     response.success = false;
