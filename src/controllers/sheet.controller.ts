@@ -63,5 +63,6 @@ export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
     stream.pipe(res);
   } catch (error) {
     console.log(error);
+    return;
   }
 });

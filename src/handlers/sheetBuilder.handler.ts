@@ -92,6 +92,7 @@ export const buildSheet = async (columns: CellValidation[]) => {
       },
     });
 
+    // @ts-ignore
     await sheetsAPI.spreadsheets.batchUpdate({
       spreadsheetId: `${spreadsheetId}`,
       requestBody: {
@@ -118,17 +119,36 @@ export const buildSheet = async (columns: CellValidation[]) => {
               })),
 
               // create data validations
-              ...columns.map((validation: CellValidation, i: number) => ({
-                setDataValidation: {
-                  range: {
-                    sheetId,
-                    startRowIndex: 1,
-                    startColumnIndex: i,
-                    endColumnIndex: i + 1,
-                  },
-                  rule: validateSheet(validation, i),
-                },
-              })),
+              // ...columns
+              //   .filter((column) => column.rule)
+              //   .map((validation: CellValidation, i: number) => ({
+              //     setDataValidation: {
+              //       range: {
+              //         sheetId,
+              //         startRowIndex: 1,
+              //         startColumnIndex: i,
+              //         endColumnIndex: i + 1,
+              //       },
+              //       rule: validateSheet(validation, i),
+              //     },
+              //   })),
+
+              // create data validations
+              ...columns.map((validation: CellValidation, i: number) =>
+                validation.rule
+                  ? {
+                      setDataValidation: {
+                        range: {
+                          sheetId,
+                          startRowIndex: 1,
+                          startColumnIndex: i,
+                          endColumnIndex: i + 1,
+                        },
+                        rule: validateSheet(validation, i),
+                      },
+                    }
+                  : null,
+              ),
             ]
           : [],
       },
@@ -136,6 +156,7 @@ export const buildSheet = async (columns: CellValidation[]) => {
 
     response.data = { sheetLink };
   } catch (error) {
+    console.log(error);
     response.success = false;
     response.error = error;
   } finally {
