@@ -4,7 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -62,7 +62,7 @@ export class User extends BaseEntity {
   })
   is_admin: boolean;
 
-  @ManyToMany(() => UploadedSheet)
+  @OneToMany(() => UploadedSheet, uploadedSheet => uploadedSheet.user)
   uploadedSheets: UploadedSheet[];
 
   @CreateDateColumn()

@@ -12,11 +12,11 @@ const s3 = new aws.S3({
   signatureVersion: 'v4',
 });
 
-let bucketParams = {
+const bucketParams = {
   Bucket: `${process.env.AWS_BUCKET_NAME}`,
 };
 
-let verifiedBucketParams = {
+const verifiedBucketParams = {
   Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
 };
 
@@ -52,7 +52,7 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
 );
 
 const getFileStream = (key, bucket) => {
-  let fileParams = {
+  const fileParams = {
     Key: key,
     Bucket: bucket,
   };
@@ -112,20 +112,20 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
         Bucket: bucket,
         Key: key,
       };
-      let file = s3.getObject(params).createReadStream();
-      let buffers: any[] = [];
+      const file = s3.getObject(params).createReadStream();
+      const buffers: any[] = [];
 
       file.on('data', function (data) {
         buffers.push(data);
       });
       file.on('end', function () {
-        let buffer = Buffer.concat(buffers);
-        let verifiedSheetData = xlsx.read(buffer);
-        let verifiedSheetJson: any = xlsx.utils.sheet_to_json(
+        const buffer = Buffer.concat(buffers);
+        const verifiedSheetData = xlsx.read(buffer);
+        const verifiedSheetJson: any = xlsx.utils.sheet_to_json(
           verifiedSheetData.Sheets[0],
         );
         const modifiedWorkbook = xlsx.utils.book_new();
-        let sheet = xlsx.utils.book_append_sheet(
+        const sheet = xlsx.utils.book_append_sheet(
           verifiedSheetJson,
           modifiedWorkbook,
           'kpiName',

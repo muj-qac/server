@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { KpiAllocation } from "./KpiAllocation.model";
 import { User } from "./User.model";
 
@@ -19,16 +19,23 @@ export class UploadedSheet extends BaseEntity {
     })
     status: string;
 
+    @Column()
+    aws_key: string;
+
     @ManyToOne(() => KpiAllocation, allocated => allocated.uploadedSheets, { onDelete: 'RESTRICT' })
     @JoinColumn({
         name: 'kpi_id'
     })
     allocated: KpiAllocation
 
-    @ManyToMany(
-        () => User
+    @ManyToOne(
+        () => User,
+        user => user.uploadedSheets
     )
-    user: User[];
+    @JoinColumn({
+        name: 'user_id'
+    })
+    user: User;
 
     @CreateDateColumn()
     created_at: Date;

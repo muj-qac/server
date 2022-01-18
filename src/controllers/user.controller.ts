@@ -28,19 +28,14 @@ const createUser = async (data) => {
     last_name: lastName,
     email,
     password: hashedPassword,
-    details: {
-      program: details.program,
-      faculty: details.faculty,
-      school: details.school,
-      department: details.department,
-    },
+    details,
     phone_number: phoneNumber,
     role,
     is_admin: isAdmin,
   });
 }
 
-const updateUser = async (id, data) => {
+const updateUser = async (existingEmail, data) => {
   const {
     firstName,
     lastName,
@@ -52,7 +47,7 @@ const updateUser = async (id, data) => {
   if (!firstName || !email || !role)
     throwError(400, 'Please provide all the information');
   const isAdmin = role[0] === 'admin' ? true : false;
-  return User.update({ id }, {
+  return User.update({ email: existingEmail }, {
     first_name: firstName,
     last_name: lastName,
     email,
@@ -92,8 +87,8 @@ export const getAllUser: RequestHandler<any> = asyncWrap(async (_req, res) => {
 
 export const getSingleUser: RequestHandler<any> = asyncWrap(async (req, res) => {
   try {
-    const { id } = req.params;
-    const data = await User.find({ select: ['id', 'first_name', 'email', 'last_name', 'phone_number', 'details', 'is_admin', 'role'], where: { id } });
+    const { email } = req.params;
+    const data = await User.find({ select: ['id', 'first_name', 'email', 'last_name', 'phone_number', 'details', 'is_admin', 'role'], where: { email } });
     res.status(200).json(data);
   } catch (error) {
     throwError(404, "User does not exist");
@@ -104,8 +99,8 @@ export const getSingleUser: RequestHandler<any> = asyncWrap(async (req, res) => 
 export const putUpdateUser: RequestHandler<any> = asyncWrap(
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const user = await updateUser(id, req.body);
+      const { email } = req.params;
+      const user = await updateUser(email, req.body);
       res.status(205).json(user);
     } catch (error) {
       console.error(error);
@@ -118,8 +113,8 @@ export const putUpdateUser: RequestHandler<any> = asyncWrap(
 export const deleteUser: RequestHandler<any> = asyncWrap(
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params
-      const user = await User.delete({ id });
+      const { email } = req.params
+      const user = await User.delete({ email });
       res.status(201).json(user);
     } catch (error) {
       console.error(error);
