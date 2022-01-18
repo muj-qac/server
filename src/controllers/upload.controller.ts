@@ -3,8 +3,10 @@ dotenv.config();
 import { RequestHandler } from 'express';
 import { throwError } from '../helpers/ErrorHandler.helper';
 import { asyncWrap } from '../middlewares/async.middleware';
+import { UploadedSheet } from '../models/UploadedSheet.model';
 import aws from 'aws-sdk';
 import xlsx from 'xlsx';
+import fs from 'fs';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -20,12 +22,38 @@ const verifiedBucketParams = {
   Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
 };
 
+let rejectedBucketParams = {
+  Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
+};
+
+const getFileStream = (key, bucket) => {
+  let fileParams = {
+    Key: key,
+    Bucket: bucket,
+  };
+  return s3.getObject(fileParams).createReadStream();
+};
+
 export const postKPI: RequestHandler<any> = asyncWrap(
   async (req, res, _next) => {
     try {
+      //TODO: solve error
+      const user: any = req.user;
+      const userId = user.id;
+      const kpi_id = req.body.kpiId;
+      const aws_key = req.awsKey;
+      const status: string = 'processing';
+      const uploadedSheet = UploadedSheet.create({
+        status,
+        aws_key,
+        allocated: kpi_id,
+        user: userId,
+      });
+      await uploadedSheet.save();
       res.status(200).json({
-        data: req.file,
         msg: 'Successfully uploaded ' + req.file?.originalname + ' files!',
+        data: req.file,
+        uploadedSheet: uploadedSheet,
       });
     } catch (error) {
       console.error(error);
@@ -41,7 +69,7 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
         if (err) {
           res.status(404).json({ Error: err });
         } else {
-          res.status(200).json({ Success: data });
+          res.status(200).json({ 'Unverified kpis': data.Contents });
         }
       });
     } catch (error) {
@@ -51,6 +79,8 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
   },
 );
 
+<<<<<<< HEAD
+=======
 const getFileStream = (key, bucket) => {
   const fileParams = {
     Key: key,
@@ -59,16 +89,45 @@ const getFileStream = (key, bucket) => {
   return s3.getObject(fileParams).createReadStream();
 };
 
+>>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
 export const getUnverifiedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const objectKey = _req.body.fileKey;
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
       const readStream = getFileStream(objectKey, bucket);
-      res.attachment('sheet.xlsx');
+      res.attachment(`${objectKey}.xlsx`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
+      throwError(400, 'Some error occurred.');
+    }
+  },
+);
+
+export const rejectKPI: RequestHandler<any> = asyncWrap(
+  async (_req, res, _next) => {
+    try {
+      const key = _req.body.fileKey;
+      const kpiParamsToReject = {
+        Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
+        CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
+        Key: key,
+      };
+      const kpiParams = {
+        Bucket: `${process.env.AWS_BUCKET_NAME}`,
+        Key: key,
+      };
+      s3.copyObject(kpiParamsToReject, function (err, data) {
+        if (err) res.status(400).json({ err });
+        else res.status(200).json({ data });
+      });
+      s3.deleteObject(kpiParams, function (err, data) {
+        if (err) console.log({ err });
+        else console.log({ data });
+      });
+    } catch (error) {
+      console.log(error);
       throwError(400, 'Some error occurred.');
     }
   },
@@ -104,20 +163,68 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
 
 //! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 export const updateMainKPI: RequestHandler<any> = asyncWrap(
-  async (_req, res, _next) => {
+  async (req, res, _next) => {
     try {
-      const key = _req.body.fileKey;
+      const keyVerified = req.body.fileKeyVerified;
+      const keyUnverified = req.body.fileKeyUnverified;
+      const bucketUnverified = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
       const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
-      const params = {
+      const Verifiedparams = {
         Bucket: bucket,
-        Key: key,
+        Key: keyVerified,
       };
+      const Unverifiedparams = {
+        Bucket: bucketUnverified,
+        Key: keyUnverified,
+      };
+<<<<<<< HEAD
+      let file1 = s3.getObject(Verifiedparams).createReadStream();
+      let buffersVerified: any[] = [];
+
+      let file2 = s3.getObject(Unverifiedparams).createReadStream();
+      let buffersUnverified: any[] = [];
+
+      let verifiedSheetJson: any[] = [];
+      let unverifiedSheetJson: any[] = [];
+=======
       const file = s3.getObject(params).createReadStream();
       const buffers: any[] = [];
+>>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
 
-      file.on('data', function (data) {
-        buffers.push(data);
+      // let verifiedSheetJson: any[] = [];
+      const readFile1 = new Promise((res, _rej) => {
+        file1.on('data', function (data) {
+          buffersVerified.push(data);
+        });
+        file1.on('end', function () {
+          let bufferVerified = Buffer.concat(buffersVerified);
+          let verifiedSheetData = xlsx.read(bufferVerified);
+          let verifiedSheetCsv = xlsx.utils.sheet_to_json(
+            verifiedSheetData.Sheets[verifiedSheetData.SheetNames[0]],
+          );
+          // console.log(verifiedSheetCsv);
+          verifiedSheetJson = verifiedSheetCsv;
+          res('s');
+        });
       });
+<<<<<<< HEAD
+      // console.log(verifiedSheetCsv);
+
+      const readFile2 = new Promise((res, _rej) => {
+        file2.on('data', function (data) {
+          buffersUnverified.push(data);
+        });
+        file2.on('end', function () {
+          let bufferUnverified = Buffer.concat(buffersUnverified);
+          let unverifiedSheetData = xlsx.read(bufferUnverified);
+          let unverifiedSheetCsv = xlsx.utils.sheet_to_json(
+            unverifiedSheetData.Sheets[unverifiedSheetData.SheetNames[0]],
+          );
+          // console.log(unverifiedSheetCsv);
+          unverifiedSheetJson = unverifiedSheetCsv;
+          res('s');
+        });
+=======
       file.on('end', function () {
         const buffer = Buffer.concat(buffers);
         const verifiedSheetData = xlsx.read(buffer);
@@ -132,7 +239,23 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
         );
         console.log(verifiedSheetJson);
         res.send(sheet);
+>>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
       });
+
+      const readFiles = Promise.all([readFile1, readFile2]);
+      const result = await readFiles;
+
+      let combinedData: any[] = [];
+      combinedData = [...verifiedSheetJson, ...unverifiedSheetJson];
+      const combinedSheet = xlsx.utils.json_to_sheet(combinedData);
+      const wb: xlsx.WorkBook = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(wb, combinedSheet, 'test');
+      const filename = 'users.xlsx';
+      const wb_opts: any = { bookType: 'xlsx', type: 'binary' }; // workbook options
+      xlsx.writeFile(wb, filename, wb_opts); // write workbook file
+
+      const stream = fs.createReadStream(filename); // create read stream
+      stream.pipe(res);
     } catch (error) {
       console.error(error);
       throwError(400, 'Some error occurred.');
@@ -147,7 +270,24 @@ export const getVerifiedKPIs: RequestHandler<any> = asyncWrap(
         if (err) {
           res.status(404).json({ Error: err });
         } else {
-          res.status(200).json({ Success: data });
+          res.status(200).json({ 'Verified kpis': data.Contents });
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      throwError(400, 'Some error occurred.');
+    }
+  },
+);
+
+export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
+  async (_req, res, _next) => {
+    try {
+      s3.listObjects(rejectedBucketParams, function (err, data) {
+        if (err) {
+          res.status(404).json({ Error: err });
+        } else {
+          res.status(200).json({ 'Rejected kpis': data.Contents });
         }
       });
     } catch (error) {
@@ -163,7 +303,22 @@ export const getVerifiedObject: RequestHandler<any> = asyncWrap(
       const objectKey = _req.body.fileKey;
       const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
       const readStream = getFileStream(objectKey, bucket);
-      res.attachment('sheet.xlsx');
+      res.attachment(`${objectKey}.xlsx`);
+      readStream.pipe(res);
+    } catch (error) {
+      console.error(error);
+      throwError(400, 'Some error occurred.');
+    }
+  },
+);
+
+export const getRejectedObject: RequestHandler<any> = asyncWrap(
+  async (_req, res, _next) => {
+    try {
+      const objectKey = _req.body.fileKey;
+      const bucket = `${process.env.AWS_BUCKET_NAME_REJECTED}`;
+      const readStream = getFileStream(objectKey, bucket);
+      res.attachment(`${objectKey}.xlsx`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
