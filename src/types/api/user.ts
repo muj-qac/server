@@ -10,16 +10,18 @@ export type DatabaseUserInterface = {
     school?: string;
     department?: string;
   };
-  phone_number?:string;
-  role:string[];
-  is_admin:boolean;
-  created_at:Date;
-  updated_at:Date;
+  phone_number?: string;
+  role: string[];
+  is_admin: boolean;
+  created_at: Date;
+  updated_at: Date;
 };
 
 
 export type UserInterface = {
   readonly id: string;
   email: string;
-  isAdmin:boolean;
+  firstName: string;
+  lastName?: string;
+  isAdmin: boolean;
 };

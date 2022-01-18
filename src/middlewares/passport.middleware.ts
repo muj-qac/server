@@ -5,31 +5,33 @@ import { throwError } from '../helpers/ErrorHandler.helper';
 import { User } from '../models/User.model';
 import { DatabaseUserInterface, UserInterface } from '../types/api/user';
 
-
 const LocalStrategy = passportLocal.Strategy;
 
 const getUserInfo = (user) => {
   return {
     id: user.id,
     email: user.email,
-    isAdmin: user.is_admin
+    isAdmin: user.is_admin,
+    firstName: user.first_name,
+    lastName: user.last_name
   };
-}
+};
 
 const validateUser = async (email: string, password: string, done) => {
-  // console.log('bleh');
   try {
     const user = await User.findOne({
       where: {
         email: email,
       },
     });
-    if (!user) return done(null, false);
+    if (!user) {
+      done(null, false);
+      return;
+    }
     bcrypt.compare(password, user.password, (err, result: boolean) => {
       if (err) throw err;
-      // console.log(result);
-      if (result) return done(null, user);
-      else return done(null, false);
+      if (!result) done(null, false);
+      done(null, user);
     });
   } catch (error) {
     console.error(error);
@@ -37,21 +39,21 @@ const validateUser = async (email: string, password: string, done) => {
   }
 };
 
-const strategy = new LocalStrategy({ usernameField: "email", passwordField: "password" }, validateUser)
-
+const strategy = new LocalStrategy(
+  { usernameField: 'email', passwordField: 'password' },
+  validateUser,
+);
 
 passport.use(strategy);
 // ============================================================
 // passport serialize and deserialize
 // ============================================================
 passport.serializeUser((user: DatabaseUserInterface, done) => {
-  console.log("this is serialiser")
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    console.log("this is deserialiser")
     const user = await User.findOne({
       where: {
         id: id,
@@ -60,8 +62,8 @@ passport.deserializeUser(async (id: string, done) => {
     const userInfo: UserInterface = getUserInfo(user);
     done(null, userInfo);
   } catch (error) {
-    done(error)
+    done(error);
   }
 });
 
-export default passport
+export default passport;

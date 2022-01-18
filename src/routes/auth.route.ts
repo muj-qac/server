@@ -4,8 +4,8 @@ import passport from '../middlewares/passport.middleware';
 
 const router: Router = express.Router();
 
-router.get('/login' , auth.getLogIn);
-
 router.post('/login', passport.authenticate('local'), auth.postLogIn);
+
+router.post('/logout', auth.postLogOut)
 
 export default router;
