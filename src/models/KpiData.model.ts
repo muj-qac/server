@@ -4,7 +4,7 @@ import { KpiAllocation } from "./KpiAllocation.model";
 
 
 
-@Entity('kpi-data')
+@Entity('kpi_data')
 export class KpiData extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -19,9 +19,9 @@ export class KpiData extends BaseEntity {
     schema: string;
 
     @Column()
-    sheet_id:string;
+    sheet_id: string;
 
-    @OneToOne(() => KpiAllocation, allocation => allocation.kpiData)
+    @OneToOne(() => KpiAllocation, allocation => allocation.kpiData, { onDelete: 'CASCADE' })
     allocation: KpiAllocation
 
     @CreateDateColumn()

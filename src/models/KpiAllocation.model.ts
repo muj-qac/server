@@ -4,7 +4,7 @@ import { KpiData } from './KpiData.model'
 import { UploadedSheet } from "./UploadedSheet.model";
 
 
-@Entity('kpi-allocation')
+@Entity('kpi_allocation')
 export class KpiAllocation extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
