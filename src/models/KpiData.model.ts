@@ -1,5 +1,6 @@
 import { IsObject } from "class-validator";
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { CellValidation } from "../types/sheet/validations";
 import { KpiAllocation } from "./KpiAllocation.model";
 
 
@@ -13,10 +14,10 @@ export class KpiData extends BaseEntity {
     name: string;
 
     @Column({
-        type: 'simple-json'
+        type: 'simple-array'
     })
     @IsObject()
-    schema: string;
+    schema: CellValidation[];
 
     @Column()
     sheet_id: string;
