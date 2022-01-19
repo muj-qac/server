@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as user from '../controllers/user.controller';
+import * as kpi from '../controllers/kpi.controller';
 import { postKPI } from '../controllers/upload.controller';
 import uploadMiddleware from '../middlewares/upload.middleware';
 
@@ -11,7 +12,9 @@ router.get('/', (req, res, _next) => {
     res.send(req.user);
 });
 
-router.put('/change-password');
+router.put('/change-password', user.changeMyPassword);
+
+router.get('/alloted-kpi', kpi.getAllocatedKpi)
 
 router.post('/upload/:kpi', uploadMiddleware.single('file'), postKPI);
 

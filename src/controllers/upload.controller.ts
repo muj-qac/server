@@ -79,17 +79,6 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
   },
 );
 
-<<<<<<< HEAD
-=======
-const getFileStream = (key, bucket) => {
-  const fileParams = {
-    Key: key,
-    Bucket: bucket,
-  };
-  return s3.getObject(fileParams).createReadStream();
-};
-
->>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
 export const getUnverifiedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
@@ -177,7 +166,6 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
         Bucket: bucketUnverified,
         Key: keyUnverified,
       };
-<<<<<<< HEAD
       let file1 = s3.getObject(Verifiedparams).createReadStream();
       let buffersVerified: any[] = [];
 
@@ -186,10 +174,6 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
 
       let verifiedSheetJson: any[] = [];
       let unverifiedSheetJson: any[] = [];
-=======
-      const file = s3.getObject(params).createReadStream();
-      const buffers: any[] = [];
->>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
 
       // let verifiedSheetJson: any[] = [];
       const readFile1 = new Promise((res, _rej) => {
@@ -207,7 +191,6 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
           res('s');
         });
       });
-<<<<<<< HEAD
       // console.log(verifiedSheetCsv);
 
       const readFile2 = new Promise((res, _rej) => {
@@ -224,22 +207,6 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
           unverifiedSheetJson = unverifiedSheetCsv;
           res('s');
         });
-=======
-      file.on('end', function () {
-        const buffer = Buffer.concat(buffers);
-        const verifiedSheetData = xlsx.read(buffer);
-        const verifiedSheetJson: any = xlsx.utils.sheet_to_json(
-          verifiedSheetData.Sheets[0],
-        );
-        const modifiedWorkbook = xlsx.utils.book_new();
-        const sheet = xlsx.utils.book_append_sheet(
-          verifiedSheetJson,
-          modifiedWorkbook,
-          'kpiName',
-        );
-        console.log(verifiedSheetJson);
-        res.send(sheet);
->>>>>>> d9d584149f7fdadab8dd46939bf68d58dec65ea3
       });
 
       const readFiles = Promise.all([readFile1, readFile2]);

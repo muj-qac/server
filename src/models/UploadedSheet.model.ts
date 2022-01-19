@@ -17,7 +17,7 @@ export enum statusTypes {
   VERIFIED = 'verified',
 }
 
-@Entity('uploaded-sheets')
+@Entity('uploaded_sheets')
 export class UploadedSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
