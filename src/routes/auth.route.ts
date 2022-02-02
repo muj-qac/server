@@ -9,7 +9,7 @@ router.post('/login', passport.authenticate('local'), auth.postLogIn);
 router.post('/logout', auth.postLogOut);
 
 router.get("/user", (req, res) => {
-    res.status(400).json(req.user);
+    res.status(200).json(req.user);
 });
 
 export default router;
