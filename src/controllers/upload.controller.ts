@@ -7,6 +7,8 @@ import { UploadedSheet } from '../models/UploadedSheet.model';
 import aws from 'aws-sdk';
 import xlsx from 'xlsx';
 import fs from 'fs';
+import { User } from '../models/User.model';
+import { KpiData } from '../models/KpiData.model';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -38,16 +40,18 @@ export const postKPI: RequestHandler<any> = asyncWrap(
   async (req, res, _next) => {
     try {
       //TODO: solve error
-      const user: any = req.user;
-      const userId = user.id;
+      const requestUser: any = req.user;
+      const userId = requestUser.id;
       const kpi_id = req.body.kpiId;
       const aws_key = req.awsKey;
       const status: string = 'processing';
+      const user = await User.findOne({ where: { id: userId } });
+      const allocated = await KpiData.findOne({ where: { id: kpi_id } });
       const uploadedSheet = UploadedSheet.create({
         status,
         aws_key,
-        allocated: kpi_id,
-        user: userId,
+        allocated,
+        user,
       });
       await uploadedSheet.save();
       res.status(200).json({
