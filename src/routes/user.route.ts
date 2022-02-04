@@ -8,14 +8,14 @@ const router = Router();
 
 router.get('/my-profile', user.getMyProfile);
 
-router.get('/', (req, res, _next) => {
+router.get('/', (req, res) => {
     res.send(req.user);
 });
 
 router.put('/change-password', user.changeMyPassword);
 
-router.get('/alloted-kpi', kpi.getAllocatedKpi)
+router.get('/alloted-kpi', kpi.getAllocatedKpi);
 
-router.post('/upload/:kpi', uploadMiddleware.single('file'), postKPI);
+router.post('/upload/:kpiId', uploadMiddleware.single('file'), postKPI);
 
 export default router;
