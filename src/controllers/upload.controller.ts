@@ -48,9 +48,9 @@ export const postKPI: RequestHandler<any> = asyncWrap(
       const status = statusTypes.INPROCESS;
       const user = await User.findOne({ where: { id: userId } });
       const kpiData = await KpiData.findOne({ where: { id: kpi_id } });
-      if (!kpiData) return throwError(404, "KPI not found");
+      if (!kpiData) throwError(404, "KPI not found");
       const allocated = await KpiAllocation.findOne({ where: { kpiData } });
-      if (!allocated || allocated.status === false) return throwError(401, 'KPI not allocated');
+      if (!allocated || allocated.status === false) throwError(401, 'KPI not allocated');
       const uploadedSheet = UploadedSheet.create({
         status,
         aws_key,
