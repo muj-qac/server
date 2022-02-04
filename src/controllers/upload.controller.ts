@@ -44,13 +44,28 @@ export const postKPI: RequestHandler<any> = asyncWrap(
       const requestUser: any = req.user;
       const userId = requestUser.id;
       const kpi_id = req.params.kpiId;
-      const aws_key = "bleh";
+      const aws_key = req.awsKey;
       const status = statusTypes.INPROCESS;
       const user = await User.findOne({ where: { id: userId } });
       const kpiData = await KpiData.findOne({ where: { id: kpi_id } });
-      if (!kpiData) throwError(404, "KPI not found");
+      if (!kpiData) throwError(404, 'KPI not found');
       const allocated = await KpiAllocation.findOne({ where: { kpiData } });
-      if (!allocated || allocated.status === false) throwError(401, 'KPI not allocated');
+      if (!allocated || allocated.status === false)
+        throwError(401, 'KPI not allocated');
+      const uploadedSheetData = await UploadedSheet.findOne({
+        where: { user, allocated },
+      });
+      if (uploadedSheetData) {
+        const update = await UploadedSheet.update(
+          { id: uploadedSheetData.id },
+          { status: statusTypes.INPROCESS, aws_key },
+        );
+        res.status(200).json({
+          msg: 'Successfully uploaded ' + req.file?.originalname + ' files!',
+          data: req.file,
+          update,
+        });
+      }
       const uploadedSheet = UploadedSheet.create({
         status,
         aws_key,
@@ -106,6 +121,10 @@ export const rejectKPI: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const key = _req.body.fileKey;
+      let statusToPending = await UploadedSheet.update(
+        { aws_key: key },
+        { status: statusTypes.PENDING },
+      );
       const kpiParamsToReject = {
         Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
         CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
@@ -117,7 +136,7 @@ export const rejectKPI: RequestHandler<any> = asyncWrap(
       };
       s3.copyObject(kpiParamsToReject, function (err, data) {
         if (err) res.status(400).json({ err });
-        else res.status(200).json({ data });
+        else res.status(200).json({ data, statusToPending });
       });
       s3.deleteObject(kpiParams, function (err, data) {
         if (err) console.log({ err });
@@ -134,6 +153,10 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const key = _req.body.fileKey;
+      let statusToVerify = await UploadedSheet.update(
+        { aws_key: key },
+        { status: statusTypes.VERIFIED },
+      );
       const kpiParamsToVerify = {
         Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
         CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
@@ -145,7 +168,7 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
       };
       s3.copyObject(kpiParamsToVerify, function (err, data) {
         if (err) res.status(400).json({ err });
-        else res.status(200).json({ data });
+        else res.status(200).json({ data, statusToVerify });
       });
       s3.deleteObject(kpiParams, function (err, data) {
         if (err) console.log({ err });
