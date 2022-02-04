@@ -19,7 +19,6 @@ export enum statusTypes {
 }
 
 @Entity('uploaded_sheets')
-@Unique(['allocated', 'user'])
 export class UploadedSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

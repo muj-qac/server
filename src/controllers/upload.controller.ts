@@ -225,11 +225,18 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
       const combinedSheet = xlsx.utils.json_to_sheet(combinedData);
       const wb: xlsx.WorkBook = xlsx.utils.book_new();
       xlsx.utils.book_append_sheet(wb, combinedSheet, 'test');
-      const filename = 'users.xlsx';
+      const filename = 'mainKpi/kpi.xlsx';
       const wb_opts: any = { bookType: 'xlsx', type: 'binary' }; // workbook options
       xlsx.writeFile(wb, filename, wb_opts); // write workbook file
 
       const stream = fs.createReadStream(filename); // create read stream
+      // let filePath = __dirname + '/mainKpi/kpi.xlsx'
+      // const file = fs.readFileSync(filePath);
+      // fs.readFile(filePath,(err,data) => {
+      //   let s3Bucket =
+      // })
+
+      res.attachment('mainKpi.xlsx');
       stream.pipe(res);
     } catch (error) {
       console.error(error);
