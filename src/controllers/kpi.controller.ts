@@ -78,14 +78,29 @@ export const putUpdateRoles: RequestHandler<any> = asyncWrap(
 
 export const getAllocatedKpi: RequestHandler<any> = asyncWrap(async (_req, res) => {
     try {
-        const user: any = _req.user;
-        if (!user) throwError(400, "User not found");
-        const userRoles = await User.findOne({ select: ['role'], where: { id: user.id } });
-        const allocated = await KpiAllocation.find();
-        // userRoles?.role.map(role => {
-
-        // })
-        res.status(200).json({ userRoles, allocated });
+        const reqUser: any = _req.user;
+        if (!reqUser) throwError(400, "User not found");
+        const user = await User.findOne({ where: { id: reqUser.id } });
+        const allocated = await KpiAllocation.find({ relations: ['kpiData'] });
+        const allocatedKpiData = new Set();
+        user?.role.forEach(role => {
+            for (const allocatedKpi of allocated) {
+                if (allocatedKpi.allocated_to_roles.includes(role)) {
+                    allocatedKpiData.add(allocatedKpi)
+                }
+            }
+        })
+        const responseData: any = [];
+        for (const allocated of allocatedKpiData) {
+            let responseKpi = {}
+            const uploadedSheet = await UploadedSheet.findOne({ relations: ['user', 'allocated'], where: { user, allocated } });
+            if (!uploadedSheet) responseKpi['status'] = statusTypes.PENDING;
+            else responseKpi['status'] = uploadedSheet.status;
+            responseKpi = { ...responseKpi, ...allocated.kpiData }
+            delete responseKpi['schema'];
+            responseData.push(responseKpi);
+        }
+        res.status(200).json(responseData);
     } catch (error) {
         throwError(401, error);
     }
