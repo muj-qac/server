@@ -3,11 +3,12 @@ dotenv.config();
 import { RequestHandler } from 'express';
 import { throwError } from '../helpers/ErrorHandler.helper';
 import { asyncWrap } from '../middlewares/async.middleware';
-import { UploadedSheet } from '../models/UploadedSheet.model';
+import { statusTypes, UploadedSheet } from '../models/UploadedSheet.model';
 import aws from 'aws-sdk';
 import xlsx from 'xlsx';
 import fs from 'fs';
 import { User } from '../models/User.model';
+import { KpiAllocation } from '../models/KpiAllocation.model';
 import { KpiData } from '../models/KpiData.model';
 
 const s3 = new aws.S3({
@@ -42,11 +43,14 @@ export const postKPI: RequestHandler<any> = asyncWrap(
       //TODO: solve error
       const requestUser: any = req.user;
       const userId = requestUser.id;
-      const kpi_id = req.body.kpiId;
-      const aws_key = req.awsKey;
-      const status: string = 'processing';
+      const kpi_id = req.params.kpiId;
+      const aws_key = "bleh";
+      const status = statusTypes.INPROCESS;
       const user = await User.findOne({ where: { id: userId } });
-      const allocated = await KpiData.findOne({ where: { id: kpi_id } });
+      const kpiData = await KpiData.findOne({ where: { id: kpi_id } });
+      if (!kpiData) return throwError(404, "KPI not found");
+      const allocated = await KpiAllocation.findOne({ where: { kpiData } });
+      if (!allocated || allocated.status === false) return throwError(401, 'KPI not allocated');
       const uploadedSheet = UploadedSheet.create({
         status,
         aws_key,
@@ -61,7 +65,7 @@ export const postKPI: RequestHandler<any> = asyncWrap(
       });
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );

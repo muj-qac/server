@@ -4,12 +4,18 @@ import aws from 'aws-sdk';
 import { Request } from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
+import { KpiData } from '../models/KpiData.model';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
   secretAccessKey: `${process.env.AWS_SECRET_ACCESS_KEY}`,
   signatureVersion: 'v4',
 });
+
+const getKpiName = async (kpiId) => {
+  const kpiData: any = await KpiData.findOne({ where: { id: kpiId } });
+  return kpiData.name;
+}
 
 const uploadMiddleware = multer({
   storage: multerS3({
@@ -18,8 +24,8 @@ const uploadMiddleware = multer({
     metadata: function (_req: Request, file, cb) {
       cb(null, { fieldName: file.fieldname });
     },
-    key: (_req: Request, file, cb) => {
-      const kpiName = _req.params.kpi;
+    key: async (_req: Request, file, cb) => {
+      const kpiName = await getKpiName(_req.params.kpiId);
       const key =
         kpiName + '/' + Date.now().toString() + '-' + file.originalname;
       _req.awsKey = key;

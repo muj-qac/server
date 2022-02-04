@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { KpiAllocation } from './KpiAllocation.model';
@@ -18,6 +19,7 @@ export enum statusTypes {
 }
 
 @Entity('uploaded_sheets')
+@Unique(['allocated', 'user'])
 export class UploadedSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
