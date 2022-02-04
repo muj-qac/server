@@ -9,7 +9,7 @@ const router = Router();
 router.get('/my-profile', user.getMyProfile);
 
 router.get('/', (req, res) => {
-    res.send(req.user);
+  res.send(req.user);
 });
 
 router.put('/change-password', user.changeMyPassword);

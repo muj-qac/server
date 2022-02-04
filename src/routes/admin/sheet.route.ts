@@ -11,11 +11,11 @@ router.post('/new', getNewSheetData);
 router.get('/download/:id', downloadSheet);
 router.get('/unverified-kpis', kpi.getUnverifiedKPIs);
 router.get('/get-unverified-object', kpi.getUnverifiedObject);
-router.get('/verify-kpi', kpi.verifyKPI);
+router.put('/verify-kpi', kpi.verifyKPI);
 router.get('/verified-kpis', kpi.getVerifiedKPIs);
 router.get('/get-verified-object', kpi.getVerifiedObject);
 router.get('/update-mainkpi', kpi.updateMainKPI);
-router.get('/reject-kpis', kpi.rejectKPI);
+router.put('/reject-kpis', kpi.rejectKPI);
 router.get('/get-rejected-object', kpi.getRejectedObject);
 
 export default router;

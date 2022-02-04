@@ -5,6 +5,7 @@ import { Request } from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { KpiData } from '../models/KpiData.model';
+import { throwError } from '../helpers/ErrorHandler.helper';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -13,9 +14,10 @@ const s3 = new aws.S3({
 });
 
 const getKpiName = async (kpiId) => {
-  const kpiData: any = await KpiData.findOne({ where: { id: kpiId } });
-  return kpiData.name;
-}
+  const kpiData = await KpiData.findOne({ where: { id: kpiId } });
+  if (!kpiData) throwError(404, 'Kpi not found');
+  return kpiData!.name;
+};
 
 const uploadMiddleware = multer({
   storage: multerS3({
