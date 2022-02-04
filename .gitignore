@@ -33,3 +33,5 @@ build/
 
 #environment
 .env
+
+.qac.session.sql

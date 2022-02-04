@@ -123,10 +123,10 @@ export const getMyProfile: RequestHandler<any> = asyncWrap(
 export const changeMyPassword: RequestHandler<any> = asyncWrap(
   async (req: Request, res: Response) => {
     try {
-      const { oldPassword, newPassword, retypedPassword } = req.body;
+      const { oldPassword, newPassword, confirmPassword } = req.body;
       const user: any = req.user;
-      if (!oldPassword || !newPassword || !retypedPassword) throwError(406, "Please provide all the fields.");
-      if (!(newPassword === retypedPassword)) throwError(400, "Given new passwords didn't match")
+      if (!oldPassword || !newPassword || !confirmPassword) throwError(406, "Please provide all the fields.");
+      if (!(newPassword === confirmPassword)) throwError(400, "Given new passwords didn't match")
       const hashedPassword = await hash(newPassword, 10);
       const userData = User.find({ select: ['password'], where: { id: user.id } })
       compare(oldPassword, userData[0].password, async (err, result: boolean) => {

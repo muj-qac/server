@@ -6,9 +6,9 @@ const router: Router = express.Router();
 
 router.get('/get-kpis', kpi.getAllKpi);
 
+router.post('/test', kpi.testKpi)
 
 router.post('/allocate-roles', kpi.postAllocateRoles);
-
 
 router.put('/allocate-roles/:id', kpi.putUpdateRoles);
 

@@ -10,6 +10,7 @@ import { asyncWrap } from '../middlewares/async.middleware';
 import { isValidCellTypeInput, sheetSchemas } from '../validators/sheet';
 import { buildSheet } from '../handlers/sheetBuilder.handler';
 import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
+import { KpiData } from '../models/KpiData.model';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
@@ -32,10 +33,10 @@ export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
     const result = await buildSheet(title, columns);
     if (!result?.success) throwError(500, 'Error building the sheet.');
 
-    // TODO: generate the sheet download link
-    // TODO: save the details in the db
-
-    res.json({ status: 200, data: result?.data, success: true } as ApiResponse);
+    const data: any = result?.data
+    if (!data.id) throwError(500, 'Error building the sheet.');
+    const kpiData = await KpiData.create({ name: title, schema: columns, sheet_id: data.id }).save();
+    res.json({ status: 200, data: kpiData, success: true } as ApiResponse);
   } catch (error) {
     console.log(error);
     throwError(500, `Some error occurred.`);
