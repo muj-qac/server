@@ -67,7 +67,7 @@ export const postAddUser: RequestHandler<any> = asyncWrap(
 export const getAllUser: RequestHandler<any> = asyncWrap(async (_req, res) => {
   try {
     const data = await User.find({
-      select: ['id', 'first_name', 'email', 'last_name', 'role'],
+      select: ['id', 'first_name', 'email', 'last_name', 'role', 'details'],
     });
     res.status(200).json(data);
   } catch (error) {
