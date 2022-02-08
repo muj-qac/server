@@ -53,7 +53,7 @@ export const postKPI: RequestHandler<any> = asyncWrap(
       if (!allocated || allocated.status === false)
         throwError(401, 'KPI not allocated');
       const uploadedSheetData = await UploadedSheet.findOne({
-        where: { user, allocated },
+        where: { user, allocated, status: statusTypes.PENDING },
       });
       if (uploadedSheetData) {
         const update = await UploadedSheet.update(
@@ -65,19 +65,20 @@ export const postKPI: RequestHandler<any> = asyncWrap(
           data: req.file,
           update,
         });
+      } else {
+        const uploadedSheet = UploadedSheet.create({
+          status,
+          aws_key,
+          allocated,
+          user,
+        });
+        await uploadedSheet.save();
+        res.status(200).json({
+          msg: 'Successfully uploaded ' + req.file?.originalname + ' files!',
+          data: req.file,
+          uploadedSheet: uploadedSheet,
+        });
       }
-      const uploadedSheet = UploadedSheet.create({
-        status,
-        aws_key,
-        allocated,
-        user,
-      });
-      await uploadedSheet.save();
-      res.status(200).json({
-        msg: 'Successfully uploaded ' + req.file?.originalname + ' files!',
-        data: req.file,
-        uploadedSheet: uploadedSheet,
-      });
     } catch (error) {
       console.error(error);
       throwError(400, error);

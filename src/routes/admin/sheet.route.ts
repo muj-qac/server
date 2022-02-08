@@ -1,14 +1,11 @@
 import express, { Router } from 'express';
-import {
-  getNewSheetData,
-  downloadSheet,
-} from '../../controllers/sheet.controller';
+import { getNewSheetData } from '../../controllers/sheet.controller';
 import * as kpi from '../../controllers/upload.controller';
 
 const router: Router = express.Router();
 
 router.post('/new', getNewSheetData);
-router.get('/download/:id', downloadSheet);
+
 router.get('/unverified-kpis', kpi.getUnverifiedKPIs);
 router.get('/get-unverified-object', kpi.getUnverifiedObject);
 router.put('/verify-kpi', kpi.verifyKPI);
