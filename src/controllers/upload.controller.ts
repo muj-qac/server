@@ -88,11 +88,17 @@ export const postKPI: RequestHandler<any> = asyncWrap(
 export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
+      const unverified_kpis = await UploadedSheet.find({
+        where: { status: statusTypes.INPROCESS },
+      });
       s3.listObjects(bucketParams, function (err, data) {
         if (err) {
           res.status(404).json({ Error: err });
         } else {
-          res.status(200).json({ 'Unverified kpis': data.Contents });
+          res.status(200).json({
+            unverifiedKpis: data.Contents,
+            dbUnverified: unverified_kpis,
+          });
         }
       });
     } catch (error) {
@@ -271,11 +277,17 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
 export const getVerifiedKPIs: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
+      const verifiedKpis = await UploadedSheet.find({
+        where: { status: statusTypes.VERIFIED },
+      });
       s3.listObjects(verifiedBucketParams, function (err, data) {
         if (err) {
           res.status(404).json({ Error: err });
         } else {
-          res.status(200).json({ 'Verified kpis': data.Contents });
+          res.status(200).json({
+            verifiedKpis: data.Contents,
+            dbVerified: verifiedKpis,
+          });
         }
       });
     } catch (error) {
@@ -288,11 +300,16 @@ export const getVerifiedKPIs: RequestHandler<any> = asyncWrap(
 export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
+      const rejectedKpis = await UploadedSheet.find({
+        where: { status: statusTypes.PENDING },
+      });
       s3.listObjects(rejectedBucketParams, function (err, data) {
         if (err) {
           res.status(404).json({ Error: err });
         } else {
-          res.status(200).json({ 'Rejected kpis': data.Contents });
+          res
+            .status(200)
+            .json({ rejectedKpis: data.Contents, dbRejected: rejectedKpis });
         }
       });
     } catch (error) {

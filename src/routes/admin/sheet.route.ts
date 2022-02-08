@@ -15,7 +15,8 @@ router.put('/verify-kpi', kpi.verifyKPI);
 router.get('/verified-kpis', kpi.getVerifiedKPIs);
 router.get('/get-verified-object', kpi.getVerifiedObject);
 router.get('/update-mainkpi', kpi.updateMainKPI);
-router.put('/reject-kpis', kpi.rejectKPI);
+router.put('/reject-kpi', kpi.rejectKPI);
+router.get('/rejected-kpis', kpi.getRejectedKPIs);
 router.get('/get-rejected-object', kpi.getRejectedObject);
 
 export default router;
