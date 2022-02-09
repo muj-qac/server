@@ -89,16 +89,24 @@ export const postKPI: RequestHandler<any> = asyncWrap(
 export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
-      const unverified_kpis = await UploadedSheet.find({
-        where: { status: statusTypes.INPROCESS },
-      });
+      // const unverified_kpis = await UploadedSheet.find({
+      //   where: { status: statusTypes.INPROCESS },
+      // });
+
+      const unverifiedKpis = await UploadedSheet.createQueryBuilder(
+        'uploaded_sheets',
+      )
+        .leftJoinAndSelect('uploaded_sheets.user', 'user_id')
+        .where({ status: statusTypes.INPROCESS })
+        .execute();
+
       s3.listObjects(bucketParams, function (err, data) {
         if (err) {
           res.status(404).json({ Error: err });
         } else {
           res.status(200).json({
             unverifiedKpis: data.Contents,
-            dbUnverified: unverified_kpis,
+            dbUnverified: unverifiedKpis,
           });
         }
       });
@@ -278,9 +286,13 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
 export const getVerifiedKPIs: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
-      const verifiedKpis = await UploadedSheet.find({
-        where: { status: statusTypes.VERIFIED },
-      });
+      const verifiedKpis = await UploadedSheet.createQueryBuilder(
+        'uploaded_sheets',
+      )
+        .leftJoinAndSelect('uploaded_sheets.user', 'user_id')
+        .where({ status: statusTypes.VERIFIED })
+        .execute();
+
       s3.listObjects(verifiedBucketParams, function (err, data) {
         if (err) {
           res.status(404).json({ Error: err });
