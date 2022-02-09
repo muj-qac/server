@@ -120,7 +120,7 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
 export const getUnverifiedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
-      const objectKey = _req.body.fileKey;
+      const objectKey = _req.params.fileKey;
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
       const readStream = getFileStream(objectKey, bucket);
       res.attachment(`${objectKey}.xlsx`);
@@ -335,7 +335,7 @@ export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
 export const getVerifiedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
-      const objectKey = _req.body.fileKey;
+      const objectKey = _req.params.fileKey;
       const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
       const readStream = getFileStream(objectKey, bucket);
       res.attachment(`${objectKey}.xlsx`);
@@ -350,7 +350,7 @@ export const getVerifiedObject: RequestHandler<any> = asyncWrap(
 export const getRejectedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
-      const objectKey = _req.body.fileKey;
+      const objectKey = _req.params.fileKey;
       const bucket = `${process.env.AWS_BUCKET_NAME_REJECTED}`;
       const readStream = getFileStream(objectKey, bucket);
       res.attachment(`${objectKey}.xlsx`);

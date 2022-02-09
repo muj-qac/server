@@ -7,13 +7,13 @@ const router: Router = express.Router();
 router.post('/new', getNewSheetData);
 
 router.get('/unverified-kpis', kpi.getUnverifiedKPIs);
-router.get('/get-unverified-object', kpi.getUnverifiedObject);
+router.get('/get-unverified-object/:fileKey', kpi.getUnverifiedObject);
 router.put('/verify-kpi', kpi.verifyKPI);
 router.get('/verified-kpis', kpi.getVerifiedKPIs);
-router.get('/get-verified-object', kpi.getVerifiedObject);
+router.get('/get-verified-object/:fileKey', kpi.getVerifiedObject);
 router.get('/update-mainkpi', kpi.updateMainKPI);
 router.put('/reject-kpi', kpi.rejectKPI);
 router.get('/rejected-kpis', kpi.getRejectedKPIs);
-router.get('/get-rejected-object', kpi.getRejectedObject);
+router.get('/get-rejected-object/:fileKey', kpi.getRejectedObject);
 
 export default router;
