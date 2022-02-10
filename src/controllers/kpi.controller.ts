@@ -70,17 +70,17 @@ export const putUpdateRoles: RequestHandler<any> = asyncWrap(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { ...data } = req.body;
+      const data = req.body;
       const kpiData = await KpiData.findOne({ where: { id } });
       const allocated = await KpiAllocation.findOne({ where: { kpiData } });
       if (!allocated) throwError(404, 'Kpi Not found');
-      const updatedKpi = { ...allocated, ...data };
+      const updatedKpi = { ...data };
       if (updatedKpi.status) changeUploadedKpiStatus(allocated);
       const update = await KpiAllocation.update(
-        { id: allocated!.id },
-        updatedKpi,
+        { id: allocated.id },
+        { allocated_to_roles: data },
       );
-      res.status(205).json(update);
+      res.status(205).json({ message: 'Updated Successfully' });
     } catch (error) {
       console.error(error);
       throwError(404, error);
