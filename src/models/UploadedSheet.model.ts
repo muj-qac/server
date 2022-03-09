@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { KpiAllocation } from './KpiAllocation.model';
+import { RejectedKpi } from './RejectedKpi.model';
 import { User } from './User.model';
 
 export enum statusTypes {
@@ -32,6 +34,11 @@ export class UploadedSheet extends BaseEntity {
 
   @Column()
   aws_key: string;
+
+  @OneToOne(() => RejectedKpi, (rejectedKpi) => rejectedKpi.uploadedSheet, {
+    onDelete: 'CASCADE',
+  })
+  rejectedKpi: RejectedKpi;
 
   @ManyToOne(() => KpiAllocation, (allocated) => allocated.uploadedSheets, {
     onDelete: 'RESTRICT',
