@@ -4,6 +4,9 @@ import * as kpi from '../controllers/kpi.controller';
 import { getRejectedKPIs, postKPI } from '../controllers/upload.controller';
 import { uploadMiddleware } from '../middlewares/upload.middleware';
 import { downloadSheet } from '../controllers/sheet.controller';
+import {
+  getVerifiedKPIsForUser,
+} from '../controllers/sheet.controller';
 
 const router = Router();
 
@@ -22,5 +25,7 @@ router.get('/download/:id', downloadSheet);
 router.post('/upload/:kpiId', uploadMiddleware.single('file'), postKPI);
 
 router.get('get-rejected-kpis', getRejectedKPIs)
+
+router.get('/get-verified-kpi', getVerifiedKPIsForUser);
 
 export default router;
