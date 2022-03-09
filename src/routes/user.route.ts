@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as user from '../controllers/user.controller';
 import * as kpi from '../controllers/kpi.controller';
 import { getVerifiedObject } from '../controllers/upload.controller';
-import uploadMiddleware from '../middlewares/upload.middleware';
+import { uploadMiddleware } from '../middlewares/upload.middleware';
 import { getRejectedKPIs, postKPI } from '../controllers/upload.controller';
 import { downloadSheet } from '../controllers/sheet.controller';
 import { getVerifiedKPIsForUser } from '../controllers/sheet.controller';

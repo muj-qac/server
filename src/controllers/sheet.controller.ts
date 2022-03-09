@@ -13,7 +13,6 @@ import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
 import { KpiData } from '../models/KpiData.model';
 import { UploadedSheet } from '../models/UploadedSheet.model';
 import { User } from '../models/User.model';
-import { KpiAllocation } from '../models/KpiAllocation.model';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
