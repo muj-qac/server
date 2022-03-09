@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as user from '../controllers/user.controller';
 import * as kpi from '../controllers/kpi.controller';
 import { postKPI } from '../controllers/upload.controller';
+import { getVerifiedObject } from '../controllers/upload.controller';
 import uploadMiddleware from '../middlewares/upload.middleware';
 import {
   downloadSheet,
@@ -25,5 +26,7 @@ router.get('/download/:id', downloadSheet);
 router.post('/upload/:kpiId', uploadMiddleware.single('file'), postKPI);
 
 router.get('/get-verified-kpi', getVerifiedKPIsForUser);
+
+router.get('/download-verified-kpi/:fileKey', getVerifiedObject);
 
 export default router;
