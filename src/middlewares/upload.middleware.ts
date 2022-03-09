@@ -19,7 +19,7 @@ const getKpiName = async (kpiId) => {
   return kpiData!.name;
 };
 
-const uploadMiddleware = multer({
+export const uploadMiddleware = multer({
   storage: multerS3({
     s3: s3,
     bucket: `${process.env.AWS_BUCKET_NAME}`,
@@ -36,4 +36,3 @@ const uploadMiddleware = multer({
   }),
 });
 
-export default uploadMiddleware;
