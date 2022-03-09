@@ -369,3 +369,16 @@ export const getRejectedObject: RequestHandler<any> = asyncWrap(
     }
   },
 );
+
+export const getRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(async (req, res) => {
+  try {
+    const objectKey = req.params.fileKey;
+    const bucket = `${process.env.AWS_BUCKET_NAME}`;
+    const readStream = getFileStream(objectKey, bucket);
+    res.attachment(`${objectKey}.xlsx`);
+    readStream.pipe(res);
+  } catch (error) {
+    console.error(error);
+    throwError(400, 'Some error occurred.');
+  }
+})
