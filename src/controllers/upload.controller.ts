@@ -10,6 +10,7 @@ import fs from 'fs';
 import { User } from '../models/User.model';
 import { KpiAllocation } from '../models/KpiAllocation.model';
 import { KpiData } from '../models/KpiData.model';
+import { RejectedKpi } from '../models/RejectedKpi.model';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -25,12 +26,12 @@ const verifiedBucketParams = {
   Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
 };
 
-let rejectedBucketParams = {
+const rejectedBucketParams = {
   Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
 };
 
 const getFileStream = (key, bucket) => {
-  let fileParams = {
+  const fileParams = {
     Key: key,
     Bucket: bucket,
   };
@@ -132,26 +133,33 @@ export const getUnverifiedObject: RequestHandler<any> = asyncWrap(
   },
 );
 
+const addingSheetToRejectedTable = async (uploadedSheetKey, comment, aws_key) => {
+  const rejectedKpi = await UploadedSheet.findOne({ aws_key: uploadedSheetKey });
+  await UploadedSheet.update({ id: rejectedKpi!.id }, { status: statusTypes.REJECTED });
+  const rejectedData = await RejectedKpi.create({ comment, aws_key, uploadedSheet: rejectedKpi }).save();
+  return rejectedData;
+}
 export const rejectKPI: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
-      const key = _req.body.fileKey;
-      let statusToPending = await UploadedSheet.update(
-        { aws_key: key },
-        { status: statusTypes.PENDING },
-      );
+      const uploadedSheetkey = _req.body.fileKey;
+      const aws_key = _req.awsKey;
+      const comment = _req.body.comment;
+      if (!comment || !aws_key) throwError(400, 'Comment and File both are required');
+      const rejectedKpi = await addingSheetToRejectedTable(uploadedSheetkey, comment, aws_key);
+      // console.log(rejectedKpi);
       const kpiParamsToReject = {
         Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
-        CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
-        Key: key,
+        CopySource: `/${process.env.AWS_BUCKET_NAME}/${uploadedSheetkey}`,
+        Key: uploadedSheetkey,
       };
       const kpiParams = {
         Bucket: `${process.env.AWS_BUCKET_NAME}`,
-        Key: key,
+        Key: uploadedSheetkey,
       };
       s3.copyObject(kpiParamsToReject, function (err, data) {
         if (err) res.status(400).json({ err });
-        else res.status(200).json({ data, statusToPending });
+        else res.status(200).json({ rejectedKpi, data });
       });
       s3.deleteObject(kpiParams, function (err, data) {
         if (err) console.log({ err });
@@ -168,7 +176,7 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const key = _req.body.fileKey;
-      let statusToVerify = await UploadedSheet.update(
+      const statusToVerify = await UploadedSheet.update(
         { aws_key: key },
         { status: statusTypes.VERIFIED },
       );
@@ -212,11 +220,11 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
         Bucket: bucketUnverified,
         Key: keyUnverified,
       };
-      let file1 = s3.getObject(Verifiedparams).createReadStream();
-      let buffersVerified: any[] = [];
+      const file1 = s3.getObject(Verifiedparams).createReadStream();
+      const buffersVerified: any[] = [];
 
-      let file2 = s3.getObject(Unverifiedparams).createReadStream();
-      let buffersUnverified: any[] = [];
+      const file2 = s3.getObject(Unverifiedparams).createReadStream();
+      const buffersUnverified: any[] = [];
 
       let verifiedSheetJson: any[] = [];
       let unverifiedSheetJson: any[] = [];
@@ -227,9 +235,9 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
           buffersVerified.push(data);
         });
         file1.on('end', function () {
-          let bufferVerified = Buffer.concat(buffersVerified);
-          let verifiedSheetData = xlsx.read(bufferVerified);
-          let verifiedSheetCsv = xlsx.utils.sheet_to_json(
+          const bufferVerified = Buffer.concat(buffersVerified);
+          const verifiedSheetData = xlsx.read(bufferVerified);
+          const verifiedSheetCsv = xlsx.utils.sheet_to_json(
             verifiedSheetData.Sheets[verifiedSheetData.SheetNames[0]],
           );
           // console.log(verifiedSheetCsv);
@@ -244,9 +252,9 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
           buffersUnverified.push(data);
         });
         file2.on('end', function () {
-          let bufferUnverified = Buffer.concat(buffersUnverified);
-          let unverifiedSheetData = xlsx.read(bufferUnverified);
-          let unverifiedSheetCsv = xlsx.utils.sheet_to_json(
+          const bufferUnverified = Buffer.concat(buffersUnverified);
+          const unverifiedSheetData = xlsx.read(bufferUnverified);
+          const unverifiedSheetCsv = xlsx.utils.sheet_to_json(
             unverifiedSheetData.Sheets[unverifiedSheetData.SheetNames[0]],
           );
           // console.log(unverifiedSheetCsv);
@@ -361,3 +369,16 @@ export const getRejectedObject: RequestHandler<any> = asyncWrap(
     }
   },
 );
+
+export const getRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(async (req, res) => {
+  try {
+    const objectKey = req.params.fileKey;
+    const bucket = `${process.env.AWS_BUCKET_NAME}`;
+    const readStream = getFileStream(objectKey, bucket);
+    res.attachment(`${objectKey}.xlsx`);
+    readStream.pipe(res);
+  } catch (error) {
+    console.error(error);
+    throwError(400, 'Some error occurred.');
+  }
+})

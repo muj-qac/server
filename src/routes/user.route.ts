@@ -1,13 +1,11 @@
 import { Router } from 'express';
 import * as user from '../controllers/user.controller';
 import * as kpi from '../controllers/kpi.controller';
-import { postKPI } from '../controllers/upload.controller';
 import { getVerifiedObject } from '../controllers/upload.controller';
 import uploadMiddleware from '../middlewares/upload.middleware';
-import {
-  downloadSheet,
-  getVerifiedKPIsForUser,
-} from '../controllers/sheet.controller';
+import { getRejectedKPIs, postKPI } from '../controllers/upload.controller';
+import { downloadSheet } from '../controllers/sheet.controller';
+import { getVerifiedKPIsForUser } from '../controllers/sheet.controller';
 
 const router = Router();
 
@@ -24,6 +22,8 @@ router.get('/alloted-kpi', kpi.getAllocatedKpi);
 router.get('/download/:id', downloadSheet);
 
 router.post('/upload/:kpiId', uploadMiddleware.single('file'), postKPI);
+
+router.get('get-rejected-kpis', getRejectedKPIs);
 
 router.get('/get-verified-kpi', getVerifiedKPIsForUser);
 

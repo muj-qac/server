@@ -4,6 +4,7 @@ import { User } from '../models/User.model';
 import { KpiData } from '../models/KpiData.model';
 import { KpiAllocation } from '../models/KpiAllocation.model';
 import { UploadedSheet } from '../models/UploadedSheet.model';
+import { RejectedKpi } from '../models/RejectedKpi.model';
 
 
 const db = async (cb) => {
@@ -18,7 +19,7 @@ const db = async (cb) => {
           rejectUnauthorized: false,
         },
       },
-      entities: [User, Role, KpiData, KpiAllocation, UploadedSheet],
+      entities: [User, Role, KpiData, KpiAllocation, UploadedSheet, RejectedKpi],
       synchronize: true,
     });
     console.log('Connected to Postgres');
