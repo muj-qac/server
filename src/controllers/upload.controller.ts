@@ -271,7 +271,7 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
       const combinedSheet = xlsx.utils.json_to_sheet(combinedData);
       const wb: xlsx.WorkBook = xlsx.utils.book_new();
       xlsx.utils.book_append_sheet(wb, combinedSheet, 'test');
-      const filename = 'mainKpi/kpi.xlsx';
+      const filename = 'kpi.xlsx';
       const wb_opts: any = { bookType: 'xlsx', type: 'binary' }; // workbook options
       xlsx.writeFile(wb, filename, wb_opts); // write workbook file
 
