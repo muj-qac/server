@@ -13,6 +13,7 @@ import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
 import { KpiData } from '../models/KpiData.model';
 import { UploadedSheet } from '../models/UploadedSheet.model';
 import { User } from '../models/User.model';
+import { KpiAllocation } from '../models/KpiAllocation.model';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
@@ -73,13 +74,27 @@ export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
 export const getVerifiedKPIsForUser: RequestHandler<any> = asyncWrap(
   async (req, res) => {
     try {
+      const resData: any = [];
       const currentUser: any = req.user;
       const user = await User.findOne({ where: { id: currentUser.id } });
       const verifiedKpis = await UploadedSheet.find({
-        relations: ['user'],
+        relations: ['user', 'allocated'],
+        select: ['id', 'aws_key', 'allocated'],
         where: { user, status: 'verified' },
       });
-      res.status(200).json(verifiedKpis);
+      await Promise.all(
+        verifiedKpis.map(async (obj) => {
+          let resKpi = {};
+          const allocation = obj.allocated;
+          const kpiData = await KpiData.findOne({
+            relations: ['allocation'],
+            where: { allocation },
+          });
+          resKpi = { ...obj, name: kpiData!.name };
+          resData.push(resKpi);
+        }),
+      );
+      res.status(200).json(resData);
     } catch (error) {
       throwError(500, error.message);
     }
