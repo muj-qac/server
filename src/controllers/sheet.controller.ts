@@ -11,6 +11,8 @@ import { isValidCellTypeInput, sheetSchemas } from '../validators/sheet';
 import { buildSheet } from '../handlers/sheetBuilder.handler';
 import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
 import { KpiData } from '../models/KpiData.model';
+import { UploadedSheet } from '../models/UploadedSheet.model';
+import { User } from '../models/User.model';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
@@ -33,9 +35,13 @@ export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
     const result = await buildSheet(title, columns);
     if (!result?.success) throwError(500, 'Error building the sheet.');
 
-    const data: any = result?.data
+    const data: any = result?.data;
     if (!data.id) throwError(500, 'Error building the sheet.');
-    const kpiData = await KpiData.create({ name: title, schema: columns, sheet_id: data.id }).save();
+    const kpiData = await KpiData.create({
+      name: title,
+      schema: columns,
+      sheet_id: data.id,
+    }).save();
     res.json({ status: 200, data: kpiData, success: true } as ApiResponse);
   } catch (error) {
     console.log(error);
@@ -63,3 +69,19 @@ export const downloadSheet: RequestHandler = asyncWrap(async (req, res) => {
     return;
   }
 });
+
+export const getVerifiedKPIsForUser: RequestHandler<any> = asyncWrap(
+  async (req, res) => {
+    try {
+      const currentUser: any = req.user;
+      const user = await User.findOne({ where: { id: currentUser.id } });
+      const verifiedKpis = await UploadedSheet.find({
+        relations: ['user'],
+        where: { user, status: 'verified' },
+      });
+      res.status(200).json(verifiedKpis);
+    } catch (error) {
+      throwError(500, error.message);
+    }
+  },
+);
