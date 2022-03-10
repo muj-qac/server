@@ -18,6 +18,7 @@ import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
 import { KpiData } from '../models/KpiData.model';
 import { UploadedSheet } from '../models/UploadedSheet.model';
 import { User } from '../models/User.model';
+import { RejectedKpi } from '../models/RejectedKpi.model';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
@@ -105,15 +106,21 @@ export const getVerifiedKPIsForUser: RequestHandler<any> = asyncWrap(
   },
 );
 
-export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
+export const getRejectedKPIsForUser: RequestHandler<any> = asyncWrap(
   async (req, res) => {
     try {
+      const resData: any = [];
       const user = req.user;
       const rejectedKpis = await UploadedSheet.find({
         relations: ['user', 'allocated'],
+        select: ['id'],
         where: { user, status: 'rejected' },
       });
-      res.status(200).json(rejectedKpis);
+      await Promise.all(rejectedKpis.map(async (obj) => {
+        const rejectedData = await RejectedKpi.find({ relations: ['uploadedSheet'], where: { uploadedSheet: obj } });
+        resData.push(...rejectedData);
+      }));
+      res.status(200).json(resData);
     } catch (error) {
       throwError(500, error.message);
     }

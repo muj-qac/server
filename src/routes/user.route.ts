@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import * as user from '../controllers/user.controller';
 import * as kpi from '../controllers/kpi.controller';
-import { getRejectedKPIsForUsers } from '../controllers/upload.controller';
 import uploadMiddleware from '../middlewares/upload.middleware';
-import { getRejectedKPIs, postKPI } from '../controllers/upload.controller';
+import { postKPI } from '../controllers/upload.controller';
 import {
   downloadSheet,
   downloadVerifiedKpi,
+  getRejectedKPIsForUser,
 } from '../controllers/sheet.controller';
 import { getVerifiedKPIsForUser } from '../controllers/sheet.controller';
 
@@ -26,12 +26,11 @@ router.get('/download/:id', downloadSheet);
 
 router.post('/upload/:kpiId', uploadMiddleware.single('file'), postKPI);
 
-router.get('get-rejected-kpis', getRejectedKPIs);
+router.get('/get-rejected-kpis', getRejectedKPIsForUser);
 
 router.get('/get-verified-kpi', getVerifiedKPIsForUser);
 
 router.get('/download-verified-kpi/:fileKey', downloadVerifiedKpi);
 
-router.get('/get-rejected-kpi', getRejectedKPIsForUsers);
 
 export default router;
