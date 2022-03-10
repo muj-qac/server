@@ -117,8 +117,9 @@ export const getRejectedKPIsForUser: RequestHandler<any> = asyncWrap(
         where: { user, status: 'rejected' },
       });
       await Promise.all(rejectedKpis.map(async (obj) => {
-        const rejectedData = await RejectedKpi.find({ relations: ['uploadedSheet'], where: { uploadedSheet: obj } });
-        resData.push(...rejectedData);
+        const rejectedData = await RejectedKpi.findOne({ relations: ['uploadedSheet'], where: { uploadedSheet: obj } });
+        const kpiData = await KpiData.findOne({ relations: ['allocation'], where: { allocation: obj.allocated } })
+        resData.push({ ...rejectedData, name: kpiData!.name });
       }));
       res.status(200).json(resData);
     } catch (error) {
