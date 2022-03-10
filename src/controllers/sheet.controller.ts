@@ -1,6 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { RequestHandler } from 'express';
 
 import { ajv } from '../config/ajv.config';
+
+import aws from 'aws-sdk';
 
 import { CellValidation } from '../types/sheet/validations';
 import ApiResponse from '../types/api';
@@ -96,6 +101,50 @@ export const getVerifiedKPIsForUser: RequestHandler<any> = asyncWrap(
       res.status(200).json(resData);
     } catch (error) {
       throwError(500, error.message);
+    }
+  },
+);
+
+export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
+  async (req, res) => {
+    try {
+      const user = req.user;
+      const rejectedKpis = await UploadedSheet.find({
+        relations: ['user', 'allocated'],
+        where: { user, status: 'rejected' },
+      });
+      res.status(200).json(rejectedKpis);
+    } catch (error) {
+      throwError(500, error.message);
+    }
+  },
+);
+
+const s3 = new aws.S3({
+  accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
+  secretAccessKey: `${process.env.AWS_SECRET_ACCESS_KEY}`,
+  signatureVersion: 'v4',
+});
+
+const getFileStream = (key, bucket) => {
+  const fileParams = {
+    Key: key,
+    Bucket: bucket,
+  };
+  return s3.getObject(fileParams).createReadStream();
+};
+
+export const downloadVerifiedKpi: RequestHandler<any> = asyncWrap(
+  async (_req, res, _next) => {
+    try {
+      const objectKey = _req.params.fileKey;
+      const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
+      const readStream = getFileStream(objectKey, bucket);
+      res.attachment(`${objectKey}.xlsx`);
+      readStream.pipe(res);
+    } catch (error) {
+      console.error(error);
+      throwError(400, 'Some error occurred.');
     }
   },
 );
