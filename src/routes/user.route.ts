@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as user from '../controllers/user.controller';
 import * as kpi from '../controllers/kpi.controller';
 import uploadMiddleware from '../middlewares/upload.middleware';
-import { postKPI } from '../controllers/upload.controller';
+import { downloadRejectedKPIsForUsers, postKPI } from '../controllers/upload.controller';
 import {
   downloadSheet,
   downloadVerifiedKpi,
@@ -31,6 +31,8 @@ router.get('/get-rejected-kpis', getRejectedKPIsForUser);
 router.get('/get-verified-kpi', getVerifiedKPIsForUser);
 
 router.get('/download-verified-kpi/:fileKey', downloadVerifiedKpi);
+
+router.get('/download-rejected-kpi/:fileKey', downloadRejectedKPIsForUsers);
 
 
 export default router;
