@@ -370,7 +370,7 @@ export const getRejectedObject: RequestHandler<any> = asyncWrap(
   },
 );
 
-export const getRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(async (req, res) => {
+export const downloadRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(async (req, res) => {
   try {
     const objectKey = req.params.fileKey;
     const bucket = `${process.env.AWS_BUCKET_NAME}`;
