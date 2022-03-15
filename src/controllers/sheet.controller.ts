@@ -19,6 +19,7 @@ import { KpiData } from '../models/KpiData.model';
 import { UploadedSheet } from '../models/UploadedSheet.model';
 import { User } from '../models/User.model';
 import { RejectedKpi } from '../models/RejectedKpi.model';
+import { VerifiedKpi } from '../models/VerifiedKpi.model';
 
 export const getNewSheetData: RequestHandler = asyncWrap(async (req, res) => {
   try {
@@ -81,25 +82,16 @@ export const getVerifiedKPIsForUser: RequestHandler<any> = asyncWrap(
     try {
       const resData: any = [];
       const currentUser: any = req.user;
-      const user = await User.findOne({ where: { id: currentUser.id } });
-      const verifiedKpis = await UploadedSheet.find({
-        relations: ['user', 'allocated'],
-        select: ['id', 'aws_key', 'allocated'],
-        where: { user, status: 'verified' },
-      });
+      const uploadedKpis = await UploadedSheet.find({ relations: ['user', 'allocated'], where: { user: currentUser } });
       await Promise.all(
-        verifiedKpis.map(async (obj) => {
-          let resKpi = {};
-          const allocation = obj.allocated;
-          const kpiData = await KpiData.findOne({
-            relations: ['allocation'],
-            where: { allocation },
-          });
-          resKpi = { ...obj, name: kpiData!.name };
-          resData.push(resKpi);
-        }),
-      );
-      res.status(200).json(resData);
+        uploadedKpis.map(async uploadedKpi => {
+          const verifiedKpi = await VerifiedKpi.findOne({ relations: ['uploadedSheet'], where: { uploadedSheet: uploadedKpi } });
+          const kpiData = await KpiData.findOne({ relations: ['allocation'], where: { allocation: uploadedKpi.allocated } });
+          if (kpiData && verifiedKpi) resData.push({ key: verifiedKpi.aws_key, kpiName: kpiData.name });
+        }
+        )
+      )
+      res.send(resData);
     } catch (error) {
       throwError(500, error.message);
     }
