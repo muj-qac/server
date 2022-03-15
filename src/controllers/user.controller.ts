@@ -151,25 +151,22 @@ export const changeMyPassword: RequestHandler<any> = asyncWrap(
       if (!(newPassword === confirmPassword))
         throwError(400, "Given new passwords didn't match");
       const hashedPassword = await hash(newPassword, 10);
-      const userData = User.find({
+      const userData = await User.findOne({
         select: ['password'],
         where: { id: user.id },
       });
-      compare(
-        oldPassword,
-        userData[0].password,
-        async (err, result: boolean) => {
-          if (err) throw err;
-          if (!result) throwError(404, 'Given Password is wrong');
-          const data = await User.update(
-            { id: user.id },
-            { password: hashedPassword },
-          );
-          res.status(200).json(data);
-        },
-      );
+      console.log(userData);
+      compare(oldPassword, userData!.password, async (err, result: boolean) => {
+        if (err) throw err;
+        if (!result) throwError(404, 'Given Password is wrong');
+        const data = await User.update(
+          { id: user.id },
+          { password: hashedPassword },
+        );
+        res.status(200).json(data);
+      });
     } catch (error) {
-      throwError(404, 'User does not exist');
+      throwError(404, error.message);
     }
   },
 );
