@@ -11,6 +11,7 @@ import { User } from '../models/User.model';
 import { KpiAllocation } from '../models/KpiAllocation.model';
 import { KpiData } from '../models/KpiData.model';
 import { RejectedKpi } from '../models/RejectedKpi.model';
+import { log } from 'console';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -54,8 +55,9 @@ export const postKPI: RequestHandler<any> = asyncWrap(
       if (!allocated || allocated.status === false)
         throwError(401, 'KPI not allocated');
       const uploadedSheetData = await UploadedSheet.findOne({
-        where: { user, allocated, status: statusTypes.PENDING },
+        where: { user, allocated, status: statusTypes.REJECTED },
       });
+      console.log(uploadedSheetData);
       if (uploadedSheetData) {
         const update = await UploadedSheet.update(
           { id: uploadedSheetData.id },
@@ -113,7 +115,7 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
       });
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -128,46 +130,66 @@ export const getUnverifiedObject: RequestHandler<any> = asyncWrap(
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
 
-const addingSheetToRejectedTable = async (uploadedSheetKey, comment, aws_key) => {
-  const rejectedKpi = await UploadedSheet.findOne({ aws_key: uploadedSheetKey });
-  await UploadedSheet.update({ id: rejectedKpi!.id }, { status: statusTypes.REJECTED });
-  const rejectedData = await RejectedKpi.create({ comment, aws_key, uploadedSheet: rejectedKpi }).save();
+const addingSheetToRejectedTable = async (
+  uploadedSheetKey,
+  comment,
+  aws_key,
+) => {
+  const rejectedKpi = await UploadedSheet.findOne({
+    aws_key: uploadedSheetKey,
+  });
+  await UploadedSheet.update(
+    { id: rejectedKpi!.id },
+    { status: statusTypes.REJECTED },
+  );
+  const rejectedData = await RejectedKpi.create({
+    comment,
+    aws_key,
+    uploadedSheet: rejectedKpi,
+  }).save();
   return rejectedData;
-}
+};
 export const rejectKPI: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const uploadedSheetkey = _req.body.fileKey;
       const aws_key = _req.awsKey;
       const comment = _req.body.comment;
-      if (!comment || !aws_key) throwError(400, 'Comment and File both are required');
-      const rejectedKpi = await addingSheetToRejectedTable(uploadedSheetkey, comment, aws_key);
+      if (!comment || !aws_key)
+        throwError(400, 'Comment and File both are required');
+      const rejectedKpi = await addingSheetToRejectedTable(
+        uploadedSheetkey,
+        comment,
+        aws_key,
+      );
+      if (!rejectedKpi) throwError(500, 'No Entry in Database');
+      res.status(200).json(rejectedKpi);
       // console.log(rejectedKpi);
-      const kpiParamsToReject = {
-        Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
-        CopySource: `/${process.env.AWS_BUCKET_NAME}/${uploadedSheetkey}`,
-        Key: uploadedSheetkey,
-      };
-      const kpiParams = {
-        Bucket: `${process.env.AWS_BUCKET_NAME}`,
-        Key: uploadedSheetkey,
-      };
-      s3.copyObject(kpiParamsToReject, function (err, data) {
-        if (err) res.status(400).json({ err });
-        else res.status(200).json({ rejectedKpi, data });
-      });
-      s3.deleteObject(kpiParams, function (err, data) {
-        if (err) console.log({ err });
-        else console.log({ data });
-      });
+      // const kpiParamsToReject = {
+      //   Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
+      //   CopySource: `/${process.env.AWS_BUCKET_NAME}/${uploadedSheetkey}`,
+      //   Key: uploadedSheetkey,
+      // };
+      // const kpiParams = {
+      //   Bucket: `${process.env.AWS_BUCKET_NAME}`,
+      //   Key: uploadedSheetkey,
+      // };
+      // s3.copyObject(kpiParamsToReject, function (err, data) {
+      //   if (err) res.status(400).json({ err });
+      //   else res.status(200).json({ rejectedKpi, data });
+      // });
+      // s3.deleteObject(kpiParams, function (err, data) {
+      //   if (err) console.log({ err });
+      //   else console.log({ data });
+      // });
     } catch (error) {
       console.log(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -180,26 +202,28 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
         { aws_key: key },
         { status: statusTypes.VERIFIED },
       );
-      const kpiParamsToVerify = {
-        Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
-        CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
-        Key: key,
-      };
-      const kpiParams = {
-        Bucket: `${process.env.AWS_BUCKET_NAME}`,
-        Key: key,
-      };
-      s3.copyObject(kpiParamsToVerify, function (err, data) {
-        if (err) res.status(400).json({ err });
-        else res.status(200).json({ data, statusToVerify });
-      });
-      s3.deleteObject(kpiParams, function (err, data) {
-        if (err) console.log({ err });
-        else console.log({ data });
-      });
+      if (!statusToVerify) throwError(500, 'No Entry in Database');
+      res.status(200).json(statusToVerify);
+      // const kpiParamsToVerify = {
+      //   Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
+      //   CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
+      //   Key: key,
+      // };
+      // const kpiParams = {
+      //   Bucket: `${process.env.AWS_BUCKET_NAME}`,
+      //   Key: key,
+      // };
+      // s3.copyObject(kpiParamsToVerify, function (err, data) {
+      //   if (err) res.status(400).json({ err });
+      //   else res.status(200).json({ data, statusToVerify });
+      // });
+      // s3.deleteObject(kpiParams, function (err, data) {
+      //   if (err) console.log({ err });
+      //   else console.log({ data });
+      // });
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -286,7 +310,7 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
       stream.pipe(res);
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -301,19 +325,21 @@ export const getVerifiedKPIs: RequestHandler<any> = asyncWrap(
         .where({ status: statusTypes.VERIFIED })
         .execute();
 
-      s3.listObjects(verifiedBucketParams, function (err, data) {
-        if (err) {
-          res.status(404).json({ Error: err });
-        } else {
-          res.status(200).json({
-            verifiedKpis: data.Contents,
-            dbVerified: verifiedKpis,
-          });
-        }
-      });
+      if (!verifiedKpis) throwError(500, 'No Entry in Database');
+      res.status(200).json(verifiedKpis);
+      // s3.listObjects(bucketParams, function (err, data) {
+      //   if (err) {
+      //     res.status(404).json({ Error: err });
+      //   } else {
+      //     res.status(200).json({
+      //       verifiedKpis: data.Contents,
+      //       dbVerified: verifiedKpis,
+      //     });
+      //   }
+      // });
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -322,20 +348,22 @@ export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const rejectedKpis = await UploadedSheet.find({
-        where: { status: statusTypes.PENDING },
+        where: { status: statusTypes.REJECTED },
       });
-      s3.listObjects(rejectedBucketParams, function (err, data) {
-        if (err) {
-          res.status(404).json({ Error: err });
-        } else {
-          res
-            .status(200)
-            .json({ rejectedKpis: data.Contents, dbRejected: rejectedKpis });
-        }
-      });
+      if (!rejectedKpis) throwError(500, 'No Entry in Database');
+      res.status(200).json(rejectedKpis);
+      // s3.listObjects(rejectedBucketParams, function (err, data) {
+      //   if (err) {
+      //     res.status(404).json({ Error: err });
+      //   } else {
+      //     res
+      //       .status(200)
+      //       .json({ rejectedKpis: data.Contents, dbRejected: rejectedKpis });
+      //   }
+      // });
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -344,13 +372,13 @@ export const getVerifiedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const objectKey = _req.params.fileKey;
-      const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
+      const bucket = `${process.env.AWS_BUCKET_NAME}`;
       const readStream = getFileStream(objectKey, bucket);
-      res.attachment(`${objectKey}.xlsx`);
+      res.attachment(`${objectKey}`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
@@ -359,26 +387,29 @@ export const getRejectedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const objectKey = _req.params.fileKey;
-      const bucket = `${process.env.AWS_BUCKET_NAME_REJECTED}`;
+      const bucket = `${process.env.AWS_BUCKET_NAME}`;
       const readStream = getFileStream(objectKey, bucket);
-      res.attachment(`${objectKey}.xlsx`);
+      res.attachment(`${objectKey}`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
-      throwError(400, 'Some error occurred.');
+      throwError(400, error);
     }
   },
 );
 
-export const downloadRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(async (req, res) => {
-  try {
-    const objectKey = req.params.fileKey;
-    const bucket = `${process.env.AWS_BUCKET_NAME}`;
-    const readStream = getFileStream(objectKey, bucket);
-    res.attachment(`${objectKey}.xlsx`);
-    readStream.pipe(res);
-  } catch (error) {
-    console.error(error);
-    throwError(400, 'Some error occurred.');
-  }
-})
+// TODO: create new bucket for admin rejected kpi
+export const downloadRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(
+  async (req, res) => {
+    try {
+      const objectKey = req.params.fileKey;
+      const bucket = `${process.env.AWS_BUCKET_NAME}`;
+      const readStream = getFileStream(objectKey, bucket);
+      res.attachment(`${objectKey}`);
+      readStream.pipe(res);
+    } catch (error) {
+      console.error(error);
+      throwError(400, error);
+    }
+  },
+);
