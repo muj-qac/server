@@ -11,7 +11,7 @@ import { User } from '../models/User.model';
 import { KpiAllocation } from '../models/KpiAllocation.model';
 import { KpiData } from '../models/KpiData.model';
 import { RejectedKpi } from '../models/RejectedKpi.model';
-import { log } from 'console';
+import { VerifiedKpi } from '../models/VerifiedKpi.model';
 
 const s3 = new aws.S3({
   accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
@@ -23,13 +23,13 @@ const bucketParams = {
   Bucket: `${process.env.AWS_BUCKET_NAME}`,
 };
 
-const verifiedBucketParams = {
-  Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
-};
+// const verifiedBucketParams = {
+//   Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
+// };
 
-const rejectedBucketParams = {
-  Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
-};
+// const rejectedBucketParams = {
+//   Bucket: `${process.env.AWS_BUCKET_NAME_REJECTED}`,
+// };
 
 const getFileStream = (key, bucket) => {
   const fileParams = {
@@ -203,7 +203,9 @@ export const verifyKPI: RequestHandler<any> = asyncWrap(
         { status: statusTypes.VERIFIED },
       );
       if (!statusToVerify) throwError(500, 'No Entry in Database');
-      res.status(200).json(statusToVerify);
+      const verfiedUploadedKpi = await UploadedSheet.findOne({ aws_key: key });
+      const verfiedKpi = await VerifiedKpi.create({ aws_key: key, uploadedSheet: verfiedUploadedKpi }).save();
+      res.status(200).json(verfiedKpi);
       // const kpiParamsToVerify = {
       //   Bucket: `${process.env.AWS_BUCKET_NAME_VERIFIED}`,
       //   CopySource: `/${process.env.AWS_BUCKET_NAME}/${key}`,
