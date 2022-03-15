@@ -51,7 +51,7 @@ export class UploadedSheet extends BaseEntity {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({
-    name: 'kpi_id',
+    name: 'allocated_kpi_id',
   })
   allocated: KpiAllocation;
 
