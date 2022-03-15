@@ -13,6 +13,7 @@ import {
 import { KpiAllocation } from './KpiAllocation.model';
 import { RejectedKpi } from './RejectedKpi.model';
 import { User } from './User.model';
+import { VerifiedKpi } from './VerifiedKpi.model';
 
 export enum statusTypes {
   PENDING = 'pending',
@@ -40,6 +41,11 @@ export class UploadedSheet extends BaseEntity {
     onDelete: 'CASCADE',
   })
   rejectedKpi: RejectedKpi;
+
+  @OneToOne(() => VerifiedKpi, (verifiedKpi) => verifiedKpi.uploadedSheet, {
+    onDelete: 'CASCADE',
+  })
+  verifiedKpi: VerifiedKpi;
 
   @ManyToOne(() => KpiAllocation, (allocated) => allocated.uploadedSheets, {
     onDelete: 'RESTRICT',
