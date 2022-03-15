@@ -24,7 +24,7 @@ router.post('/upload/:kpiId', uploadMiddleware.single('file'), postKPI);
 
 router.get('/get-rejected-kpis', getRejectedKPIsForUser);
 
-router.get('/get-verified-kpi', getVerifiedKPIsForUser);
+router.get('/get-verified-kpis', getVerifiedKPIsForUser);
 
 router.get('/download-verified-kpi/:fileKey', downloadVerifiedKpi);
 
