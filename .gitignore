@@ -33,5 +33,7 @@ build/
 
 #environment
 .env
+.env.dev
+.env.prod
 
 .qac.session.sql
