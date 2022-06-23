@@ -242,88 +242,105 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
         Bucket: bucketCommon,
         Key: appendFileKey,
       };
-      const masterFile = s3.getObject(masterParams).createReadStream();
-      const masterBuffer: any[] = [];
 
-      const appendFile = s3.getObject(commonParams).createReadStream();
-      const appendBuffer: any[] = [];
-
-      let masterJson: any[] = [];
-      let appendJson: any[] = [];
-
-      const readMaster = new Promise((res, _rej) => {
-        try {
-          masterFile.on('data', function (data) {
-            masterBuffer.push(data);
+      s3.headObject(masterParams, async function (err, data) {
+        if (err && err.name === 'NotFound') {
+          const params = {
+            Bucket: `${process.env.AWS_BUCKET_NAME_MASTER}`,
+            // Key: 'merged/' + merged_filename,
+            Key: `merged/${kpiId}.xlsx`,
+            Body: data,
+          };
+          s3.upload(params, function (err, data) {
+            if (err) {
+              console.log('Error uploading data: ', err);
+            } else console.log('file uploaded');
           });
-          masterFile.on('end', function () {
-            const bufferMaster = Buffer.concat(masterBuffer);
-            const masterData = xlsx.read(bufferMaster);
-            const masterCsv = xlsx.utils.sheet_to_json(
-              masterData.Sheets[masterData.SheetNames[0]],
-            );
-            masterJson = masterCsv;
-            res('s');
+        } else {
+          const masterFile = s3.getObject(masterParams).createReadStream();
+          const masterBuffer: any[] = [];
+
+          const appendFile = s3.getObject(commonParams).createReadStream();
+          const appendBuffer: any[] = [];
+
+          let masterJson: any[] = [];
+          let appendJson: any[] = [];
+
+          const readMaster = new Promise((res, _rej) => {
+            try {
+              masterFile.on('data', function (data) {
+                masterBuffer.push(data);
+              });
+              masterFile.on('end', function () {
+                const bufferMaster = Buffer.concat(masterBuffer);
+                const masterData = xlsx.read(bufferMaster);
+                const masterCsv = xlsx.utils.sheet_to_json(
+                  masterData.Sheets[masterData.SheetNames[0]],
+                );
+                masterJson = masterCsv;
+                res('s');
+              });
+            } catch (error) {
+              throwError(400, error);
+            }
           });
-        } catch (error) {
-          throwError(400, error);
+
+          const readAppend = new Promise((res, _rej) => {
+            try {
+              appendFile.on('data', function (data) {
+                appendBuffer.push(data);
+              });
+              appendFile.on('end', function () {
+                const bufferAppend = Buffer.concat(appendBuffer);
+                const appendData = xlsx.read(bufferAppend);
+                const appendCsv = xlsx.utils.sheet_to_json(
+                  appendData.Sheets[appendData.SheetNames[0]],
+                );
+                appendJson = appendCsv;
+                console.log(appendJson);
+                res('s');
+              });
+            } catch (error) {
+              throwError(400, error);
+            }
+          });
+
+          const readFiles = Promise.all([readMaster, readAppend]);
+          await readFiles;
+
+          let combinedData: any[] = [];
+          combinedData = [...masterJson, ...appendJson];
+          const combinedSheet = xlsx.utils.json_to_sheet(combinedData);
+          const wb: xlsx.WorkBook = xlsx.utils.book_new();
+          xlsx.utils.book_append_sheet(wb, combinedSheet, 'Merged Sheet');
+          const filename = 'merged-kpi.xlsx';
+          const wb_opts: any = { bookType: 'xlsx', type: 'binary' }; // workbook options
+          xlsx.writeFile(wb, filename, wb_opts); // write workbook file
+
+          const stream = fs.createReadStream(filename); // create read stream
+
+          res.attachment('mainKpi.xlsx');
+          stream.pipe(res);
+
+          const merged_filename = `${kpiId}.xlsx`;
+
+          fs.readFile(filename, (err, data) => {
+            if (err) throw err;
+            const params = {
+              Bucket: `${process.env.AWS_BUCKET_NAME_MASTER}`,
+              // Key: 'merged/' + merged_filename,
+              Key: `merged/${merged_filename}`,
+              Body: data,
+            };
+            s3.upload(params, function (err, data) {
+              if (err) {
+                console.log('Error uploading data: ', err);
+              } else console.log('file uploaded');
+            });
+          });
+          res.status(200).json({ message: 'success' });
         }
       });
-
-      const readAppend = new Promise((res, _rej) => {
-        try {
-          appendFile.on('data', function (data) {
-            appendBuffer.push(data);
-          });
-          appendFile.on('end', function () {
-            const bufferAppend = Buffer.concat(appendBuffer);
-            const appendData = xlsx.read(bufferAppend);
-            const appendCsv = xlsx.utils.sheet_to_json(
-              appendData.Sheets[appendData.SheetNames[0]],
-            );
-            appendJson = appendCsv;
-            console.log(appendJson);
-            res('s');
-          });
-        } catch (error) {
-          throwError(400, error);
-        }
-      });
-
-      const readFiles = Promise.all([readMaster, readAppend]);
-      await readFiles;
-
-      let combinedData: any[] = [];
-      combinedData = [...masterJson, ...appendJson];
-      const combinedSheet = xlsx.utils.json_to_sheet(combinedData);
-      const wb: xlsx.WorkBook = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, combinedSheet, 'Merged Sheet');
-      const filename = 'merged-kpi.xlsx';
-      const wb_opts: any = { bookType: 'xlsx', type: 'binary' }; // workbook options
-      xlsx.writeFile(wb, filename, wb_opts); // write workbook file
-
-      const stream = fs.createReadStream(filename); // create read stream
-
-      res.attachment('mainKpi.xlsx');
-      stream.pipe(res);
-
-      const merged_filename = `${kpiId}.xlsx`;
-
-      fs.readFile(filename, (err, data) => {
-        if (err) throw err;
-        const params = {
-          Bucket: `${process.env.AWS_BUCKET_NAME_MASTER}`,
-          // Key: 'merged/' + merged_filename,
-          Key: `merged/${merged_filename}`,
-          Body: data,
-        };
-        s3.upload(params, function (err, data) {
-          if (err) {
-            console.log('Error uploading data: ', err);
-          } else console.log('file uploaded');
-        });
-      });
-      res.status(200).json({ message: 'success' });
     } catch (error) {
       console.log('Error ============: ', error);
       throwError(400, error);
