@@ -428,8 +428,12 @@ export const getRejectedObject: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const objectKey = _req.params.fileKey;
+      const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
-      const readStream = getFileStream(objectKey, bucket);
+      const readStream = getFileStream(objectKeyDecoded, bucket);
+      readStream.on('error', () => {
+        res.status(404).send('File not found');
+      });
       res.attachment(`${objectKey}`);
       readStream.pipe(res);
     } catch (error) {
@@ -444,8 +448,12 @@ export const downloadRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(
   async (req, res) => {
     try {
       const objectKey = req.params.fileKey;
+      const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
-      const readStream = getFileStream(objectKey, bucket);
+      const readStream = getFileStream(objectKeyDecoded, bucket);
+      readStream.on('error', () => {
+        res.status(404).send('File not found');
+      });
       res.attachment(`${objectKey}`);
       readStream.pipe(res);
     } catch (error) {
@@ -459,8 +467,12 @@ export const downloadMergedKPI: RequestHandler<any> = asyncWrap(
   async (req, res) => {
     try {
       const objectKey = `merged/${req.params.fileKey}.xlsx`;
+      const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
-      const readStream = getFileStream(objectKey, bucket);
+      const readStream = getFileStream(objectKeyDecoded, bucket);
+      readStream.on('error', () => {
+        res.status(404).send('File not found');
+      });
       res.attachment(`${objectKey}`);
       readStream.pipe(res);
     } catch (error) {
