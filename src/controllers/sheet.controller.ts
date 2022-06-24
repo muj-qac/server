@@ -159,9 +159,10 @@ export const downloadVerifiedKpi: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const objectKey = _req.params.fileKey;
+      const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
-      const readStream = getFileStream(objectKey, bucket);
-      res.attachment(`${objectKey}.xlsx`);
+      const readStream = getFileStream(objectKeyDecoded, bucket);
+      res.attachment(`${objectKeyDecoded}.xlsx`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
