@@ -82,15 +82,24 @@ export const getVerifiedKPIsForUser: RequestHandler<any> = asyncWrap(
     try {
       const resData: any = [];
       const currentUser: any = req.user;
-      const uploadedKpis = await UploadedSheet.find({ relations: ['user', 'allocated'], where: { user: currentUser } });
+      const uploadedKpis = await UploadedSheet.find({
+        relations: ['user', 'allocated'],
+        where: { user: currentUser },
+      });
       await Promise.all(
-        uploadedKpis.map(async uploadedKpi => {
-          const verifiedKpi = await VerifiedKpi.findOne({ relations: ['uploadedSheet'], where: { uploadedSheet: uploadedKpi } });
-          const kpiData = await KpiData.findOne({ relations: ['allocation'], where: { allocation: uploadedKpi.allocated } });
-          if (kpiData && verifiedKpi) resData.push({ key: verifiedKpi.aws_key, kpiName: kpiData.name });
-        }
-        )
-      )
+        uploadedKpis.map(async (uploadedKpi) => {
+          const verifiedKpi = await VerifiedKpi.findOne({
+            relations: ['uploadedSheet'],
+            where: { uploadedSheet: uploadedKpi },
+          });
+          const kpiData = await KpiData.findOne({
+            relations: ['allocation'],
+            where: { allocation: uploadedKpi.allocated },
+          });
+          if (kpiData && verifiedKpi)
+            resData.push({ key: verifiedKpi.aws_key, kpiName: kpiData.name });
+        }),
+      );
       res.send(resData);
     } catch (error) {
       throwError(500, error.message);
@@ -108,11 +117,23 @@ export const getRejectedKPIsForUser: RequestHandler<any> = asyncWrap(
         select: ['id'],
         where: { user, status: 'rejected' },
       });
-      await Promise.all(rejectedKpis.map(async (obj) => {
-        const rejectedData = await RejectedKpi.findOne({ relations: ['uploadedSheet'], where: { uploadedSheet: obj } });
-        const kpiData = await KpiData.findOne({ relations: ['allocation'], where: { allocation: obj.allocated } })
-        resData.push({ ...rejectedData, name: kpiData!.name, kpiId: kpiData!.id });
-      }));
+      await Promise.all(
+        rejectedKpis.map(async (obj) => {
+          const rejectedData = await RejectedKpi.findOne({
+            relations: ['uploadedSheet'],
+            where: { uploadedSheet: obj },
+          });
+          const kpiData = await KpiData.findOne({
+            relations: ['allocation'],
+            where: { allocation: obj.allocated },
+          });
+          resData.push({
+            ...rejectedData,
+            name: kpiData!.name,
+            kpiId: kpiData!.id,
+          });
+        }),
+      );
       res.status(200).json(resData);
     } catch (error) {
       throwError(500, error.message);
@@ -138,7 +159,7 @@ export const downloadVerifiedKpi: RequestHandler<any> = asyncWrap(
   async (_req, res, _next) => {
     try {
       const objectKey = _req.params.fileKey;
-      const bucket = `${process.env.AWS_BUCKET_NAME_VERIFIED}`;
+      const bucket = `${process.env.AWS_BUCKET_NAME}`;
       const readStream = getFileStream(objectKey, bucket);
       res.attachment(`${objectKey}.xlsx`);
       readStream.pipe(res);
