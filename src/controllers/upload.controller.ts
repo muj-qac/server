@@ -111,13 +111,17 @@ export const getUnverifiedKPIs: RequestHandler<any> = asyncWrap(
   },
 );
 
-export const getUnverifiedObject: RequestHandler<any> = asyncWrap(
-  async (_req, res, _next) => {
+export const downloadUnverifiedObject: RequestHandler<any> = asyncWrap(
+  async (req, res, _next) => {
     try {
-      const objectKey = _req.params.fileKey;
+      const { objectKey } = req.params;
+      const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
-      const readStream = getFileStream(objectKey, bucket);
-      res.attachment(`${objectKey}.xlsx`);
+      const readStream = getFileStream(objectKeyDecoded, bucket);
+      readStream.on('error', () => {
+        res.status(404).send('File not found');
+      });
+      res.attachment(`${objectKeyDecoded}`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
@@ -401,13 +405,17 @@ export const getRejectedKPIs: RequestHandler<any> = asyncWrap(
   },
 );
 
-export const getVerifiedObject: RequestHandler<any> = asyncWrap(
-  async (_req, res, _next) => {
+export const downloadVerifiedObject: RequestHandler<any> = asyncWrap(
+  async (req, res, _next) => {
     try {
-      const objectKey = _req.params.fileKey;
+      const { objectKey } = req.params;
+      const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
-      const readStream = getFileStream(objectKey, bucket);
-      res.attachment(`${objectKey}`);
+      const readStream = getFileStream(objectKeyDecoded, bucket);
+      readStream.on('error', () => {
+        res.status(404).send('File not found');
+      });
+      res.attachment(`${objectKeyDecoded}`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);

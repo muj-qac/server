@@ -8,10 +8,10 @@ const router: Router = express.Router();
 router.post('/new', getNewSheetData);
 
 router.get('/unverified-kpis', kpi.getUnverifiedKPIs);
-router.get('/get-unverified-object/:fileKey', kpi.getUnverifiedObject);
+router.get('/get-unverified-object/:objectKey', kpi.downloadUnverifiedObject);
+router.get('/get-verified-object/:objectKey', kpi.downloadVerifiedObject);
 router.put('/verify-kpi', kpi.verifyKPI);
 router.get('/verified-kpis', kpi.getVerifiedKPIs);
-router.get('/get-verified-object/:fileKey', kpi.getVerifiedObject);
 router.get('/update-mainkpi/:kpiId', kpi.updateMainKPI);
 router.post(
   '/reject-kpi/:userId',
