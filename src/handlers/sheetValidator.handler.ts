@@ -8,10 +8,16 @@ import {
 } from '../types/sheet/validations';
 
 export const textCondition: any = (rule: TextRule, i: number) => {
-  if (!rule) return {};
   let cellRange = `${String.fromCharCode(
     Number.parseInt(`${65 + Number.parseInt(`${i}`)}`),
   )}2`;
+  if (!rule)
+    return {
+      type: 'CUSTOM_FORMULA',
+      values: {
+        userEnteredValue: `=NOT(ISNUMBER(SEARCH("${'♥'}", ${cellRange})))`,
+      },
+    };
   let queries = {
     equals: (value: string) => `=EXACT("${value}", ${cellRange})`,
     notContains: (value: string) =>
@@ -31,7 +37,14 @@ export const textCondition: any = (rule: TextRule, i: number) => {
 };
 
 export const numberCondition: any = (rule: NumberRule) => {
-  if (!rule) return {};
+  if (!rule)
+    return {
+      type: 'NUMBER_BETWEEN',
+      values: [
+        { userEnteredValue: `9.99999999999999E+307` },
+        { userEnteredValue: `-9.99999999999999E+307` },
+      ],
+    };
   let queries = {
     equals: () => ({
       type: 'NUMBER_EQ',
@@ -60,7 +73,7 @@ export const numberCondition: any = (rule: NumberRule) => {
 };
 
 export const dateCondition: any = (rule: DateRule) => {
-  if (!rule) return {};
+  if (!rule) return { type: 'DATE_IS_VALID' };
   let queries = {
     isValid: () => ({ type: 'DATE_IS_VALID' }),
     between: () => ({
@@ -97,7 +110,11 @@ export const dropdownCondition: any = (rule: DropdownRule) => {
 
 export const checkboxCondition: any = (rule: CheckboxRule) => {
   // TODO: remove useCustom field from validations
-  if (!rule) return { type: 'BOOLEAN' };
+  if (!rule)
+    return {
+      type: 'BOOLEAN',
+      values: [{ userEnteredValue: `true` }, { userEnteredValue: `false` }],
+    };
   let queries = {
     useCustom: () =>
       rule.useCustom

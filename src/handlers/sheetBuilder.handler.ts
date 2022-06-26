@@ -137,21 +137,17 @@ export const buildSheet = async (
               //   })),
 
               // create data validations
-              ...columns.map((validation: CellValidation, i: number) =>
-                validation.rule
-                  ? {
-                      setDataValidation: {
-                        range: {
-                          sheetId,
-                          startRowIndex: 1,
-                          startColumnIndex: i,
-                          endColumnIndex: i + 1,
-                        },
-                        rule: validateSheet(validation, i),
-                      },
-                    }
-                  : null,
-              ),
+              ...columns.map((validation: CellValidation, i: number) => ({
+                setDataValidation: {
+                  range: {
+                    sheetId,
+                    startRowIndex: 1,
+                    startColumnIndex: i,
+                    endColumnIndex: i + 1,
+                  },
+                  rule: validateSheet(validation, i),
+                },
+              })),
             ]
           : [],
       },

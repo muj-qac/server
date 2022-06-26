@@ -17,7 +17,6 @@ import { buildSheet } from '../handlers/sheetBuilder.handler';
 import { downloadGoogleSheet } from '../handlers/sheetDownloader.handler';
 import { KpiData } from '../models/KpiData.model';
 import { UploadedSheet } from '../models/UploadedSheet.model';
-import { User } from '../models/User.model';
 import { RejectedKpi } from '../models/RejectedKpi.model';
 import { VerifiedKpi } from '../models/VerifiedKpi.model';
 
