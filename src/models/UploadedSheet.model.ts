@@ -19,7 +19,8 @@ export enum statusTypes {
   PENDING = 'pending',
   INPROCESS = 'processing',
   VERIFIED = 'verified',
-  REJECTED = 'rejected'
+  REJECTED = 'rejected',
+  MERGED = 'merged',
 }
 
 @Entity('uploaded_sheets')

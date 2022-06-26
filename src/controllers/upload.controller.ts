@@ -168,9 +168,9 @@ export const rejectKPI: RequestHandler<any> = asyncWrap(
 );
 
 export const verifyKPI: RequestHandler<any> = asyncWrap(
-  async (_req, res, _next) => {
+  async (req, res, _next) => {
     try {
-      const key = _req.body.fileKey;
+      const key = req.body.fileKey;
       const statusToVerify = await UploadedSheet.update(
         { aws_key: key },
         { status: statusTypes.VERIFIED },
@@ -194,7 +194,7 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
   async (req, res, _next) => {
     try {
       const masterFileKey = req.body.masterFileKey;
-      const appendFileKey = req.body.fileKey;
+      const appendFileKey: string = req.body.fileKey;
       const kpiId = req.params.kpiId;
       const bucketCommon = `${process.env.AWS_BUCKET_NAME}`;
       const bucketMaster = `${process.env.AWS_BUCKET_NAME_MASTER}`;
@@ -335,8 +335,11 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
               } else console.log(`File uploaded with key ${params.Key}`);
             });
           });
-
-          res.status(200).json({ message: 'success' });
+          const updatedToMerged = await UploadedSheet.update(
+            { aws_key: appendFileKey },
+            { status: statusTypes.MERGED },
+          );
+          res.status(200).json({ message: 'success', updatedToMerged });
         }
       });
     } catch (error) {
