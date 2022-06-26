@@ -431,7 +431,7 @@ export const downloadRejectedKPIsForUsers: RequestHandler<any> = asyncWrap(
       readStream.on('error', () => {
         res.status(404).send('File not found');
       });
-      res.attachment(`${objectKey}`);
+      res.attachment(`${objectKeyDecoded}`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
