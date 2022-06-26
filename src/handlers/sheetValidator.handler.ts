@@ -41,8 +41,8 @@ export const numberCondition: any = (rule: NumberRule) => {
     return {
       type: 'NUMBER_BETWEEN',
       values: [
-        { userEnteredValue: `9.99999999999999E+307` },
         { userEnteredValue: `-9.99999999999999E+307` },
+        { userEnteredValue: `9.99999999999999E+307` },
       ],
     };
   let queries = {
