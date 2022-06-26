@@ -356,7 +356,8 @@ export const getVerifiedKPIs: RequestHandler<any> = asyncWrap(
         'uploaded_sheets',
       )
         .leftJoinAndSelect('uploaded_sheets.user', 'user_id')
-        .where({ status: statusTypes.VERIFIED && statusTypes.MERGED })
+        .where({ status: statusTypes.VERIFIED })
+        .orWhere({ status: statusTypes.MERGED })
         .execute();
 
       if (!verifiedKpis) throwError(500, 'No Entry in Database');
