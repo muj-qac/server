@@ -162,7 +162,10 @@ export const downloadVerifiedKpi: RequestHandler<any> = asyncWrap(
       const objectKeyDecoded = Buffer.from(objectKey, 'base64').toString();
       const bucket = `${process.env.AWS_BUCKET_NAME}`;
       const readStream = getFileStream(objectKeyDecoded, bucket);
-      res.attachment(`${objectKeyDecoded}.xlsx`);
+      readStream.on('error', () => {
+        res.status(404).send('File not found');
+      });
+      res.attachment(`${objectKeyDecoded}`);
       readStream.pipe(res);
     } catch (error) {
       console.error(error);
