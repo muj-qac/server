@@ -263,7 +263,7 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
             { aws_key: appendFileKey },
             { status: statusTypes.MERGED },
           );
-          res.status(200).json({ message: 'success', updateMainKPI });
+          res.status(200).json({ message: 'success', updatedToMerged });
         } else {
           const masterFile = s3.getObject(masterParams).createReadStream();
           const masterBuffer: any[] = [];
