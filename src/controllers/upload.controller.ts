@@ -259,8 +259,11 @@ export const updateMainKPI: RequestHandler<any> = asyncWrap(
               } else console.log(`File uploaded with key ${params.Key}`);
             });
           });
-
-          res.status(200).json({ message: 'success' });
+          const updatedToMerged = await UploadedSheet.update(
+            { aws_key: appendFileKey },
+            { status: statusTypes.MERGED },
+          );
+          res.status(200).json({ message: 'success', updateMainKPI });
         } else {
           const masterFile = s3.getObject(masterParams).createReadStream();
           const masterBuffer: any[] = [];
